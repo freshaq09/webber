@@ -25,6 +25,7 @@ const statsFonts = document.getElementById('statsFonts');
 const statsOther = document.getElementById('statsOther');
 const previewButton = document.getElementById('previewButton');
 const initialSection = document.getElementById('initialSection');
+const fastWgetButton = document.getElementById('fastWgetButton');
 
 // Initialize socket.io connection
 function initializeSocket() {
@@ -71,6 +72,9 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Preview button handler
     previewButton.addEventListener('click', handlePreview);
+    
+    // Fast wget button handler
+    fastWgetButton.addEventListener('click', handleFastWget);
 });
 
 // Form submission handler
@@ -311,6 +315,46 @@ function showError(message) {
         errorAlert.classList.add('fade');
         setTimeout(() => errorAlert.remove(), 500);
     }, 5000);
+}
+
+// Handle fast wget button click
+function handleFastWget() {
+    const url = urlInput.value.trim();
+    if (!url) {
+        showError('Please enter a valid URL');
+        return;
+    }
+    
+    // Show loading state
+    fastWgetButton.disabled = true;
+    fastWgetButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Downloading...';
+    
+    // Create a form for direct download
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '/fast_wget';
+    
+    // Create the URL input
+    const urlField = document.createElement('input');
+    urlField.type = 'hidden';
+    urlField.name = 'url';
+    urlField.value = url;
+    
+    // Add to form and submit
+    form.appendChild(urlField);
+    document.body.appendChild(form);
+    
+    // Set a timeout to reset the button state
+    setTimeout(() => {
+        fastWgetButton.disabled = false;
+        fastWgetButton.innerHTML = '<i class="fas fa-bolt me-2"></i>Instant Download with wget';
+    }, 10000);
+    
+    // Submit the form to trigger download
+    form.submit();
+    
+    // Clean up
+    document.body.removeChild(form);
 }
 
 // Reset UI state

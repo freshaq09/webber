@@ -56,6 +56,48 @@ def direct_download():
         logger.error(f"Direct download error: {e}")
         return jsonify({"error": f"Error providing direct download: {str(e)}"}), 500
 
+@app.route('/fast_wget', methods=['POST'])
+def fast_wget():
+    """
+    Direct wget crawl route that immediately returns the ZIP file.
+    This is a synchronous endpoint that will block until the download is complete.
+    """
+    url = request.form.get('url')
+    if not url:
+        return jsonify({"error": "No URL provided"}), 400
+    
+    # Validate URL
+    if not re.match(r'^https?://', url):
+        url = 'http://' + url
+    
+    try:
+        parsed_url = urlparse(url)
+        if not parsed_url.netloc:
+            return jsonify({"error": "Invalid URL"}), 400
+    except Exception as e:
+        logger.error(f"URL parsing error: {e}")
+        return jsonify({"error": f"Invalid URL: {str(e)}"}), 400
+    
+    try:
+        # Import and use the fast_wget module
+        from fast_wget import crawl_with_wget_sync
+        
+        # Show a message to the user
+        logger.info(f"Starting fast wget download for {url}")
+        
+        # Call the wget function (this will block until download is complete)
+        zip_path = crawl_with_wget_sync(url)
+        
+        if not zip_path or not os.path.exists(zip_path):
+            return jsonify({"error": "Failed to download website with wget"}), 500
+        
+        # Return the ZIP file directly
+        return send_file(zip_path, as_attachment=True)
+    
+    except Exception as e:
+        logger.error(f"Fast wget error: {e}")
+        return jsonify({"error": f"Error downloading with wget: {str(e)}"}), 500
+
 @app.route('/scraper')
 def scraper():
     return render_template('web_scraper.html')
