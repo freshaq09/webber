@@ -13,14 +13,15 @@ import queue
 
 import requests
 from bs4 import BeautifulSoup
-from werkzeug.utils import secure_filename
+import hashlib
+import random
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 class WebCrawler:
-    def __init__(self, start_url, task_id, socketio, throttle_delay=0.5):
+    def __init__(self, start_url, task_id, socketio, throttle_delay=0.1):
         self.start_url = start_url
         self.task_id = task_id
         self.socketio = socketio
@@ -93,8 +94,11 @@ class WebCrawler:
             # Create necessary directories
             self._create_directory_structure()
             
-            # Process the queue
-            while self.queue and not self._stop_event.is_set():
+            # Process the queue - limit to 50 URLs to ensure timely completion
+            max_urls = 50
+            processed_urls = 0
+            
+            while self.queue and not self._stop_event.is_set() and processed_urls < max_urls:
                 # Get the next URL
                 current_url = self.queue.popleft()
                 
@@ -111,6 +115,12 @@ class WebCrawler:
                 # Update progress
                 self.processed_count += 1
                 self.stats["processed_urls"] = self.processed_count
+                processed_urls += 1
+                
+                # Update progress more frequently
+                if processed_urls % 5 == 0:
+                    progress = min(int((processed_urls / max_urls) * 100), 99)
+                    self._queue_status_update(f"Processed {processed_urls} of {max_urls} URLs", progress)
                 
                 # Throttle requests
                 time.sleep(self.throttle_delay)
@@ -533,11 +543,16 @@ class WebCrawler:
             'font': '.woff'  # Default, actual extension should come from URL
         }
         
+        # Add a random number to ensure uniqueness
+        random_suffix = str(random.randint(1000, 9999))
+        
         # Keep original extension if present
         if '.' in filename:
-            return secure_filename(filename)
+            safe_filename = re.sub(r'[^a-zA-Z0-9._-]', '_', f"{filename}_{random_suffix}")
+            return safe_filename[:100]  # Limit length
         else:
-            return secure_filename(filename + extensions.get(resource_type, ''))
+            safe_filename = re.sub(r'[^a-zA-Z0-9._-]', '_', f"{filename}_{random_suffix}" + extensions.get(resource_type, ''))
+            return safe_filename[:100]  # Limit length
     
     def _create_redirects_file(self):
         """Create _redirects file for Netlify."""
