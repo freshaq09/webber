@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Website Crawler - Downloads</title>
+    <link rel="stylesheet" href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css">
+    <style>
+        body {
+            padding: 20px;
+        }
+        .file-card {
+            margin-bottom: 15px;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        .download-btn {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="mt-4 mb-4">Website Crawler - Available Downloads</h1>
+        
+        {% if files %}
+            <div class="row">
+                {% for file in files %}
+                    <div class="col-md-6">
+                        <div class="card file-card bg-dark">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ file.name }}</h5>
+                                <p class="card-text">Size: {{ file.size }}</p>
+                                <a href="/download/{{ file.name }}" class="btn btn-primary download-btn">Download</a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="alert alert-info">
+                No ZIP files available for download.
+            </div>
+            <p>Use the quick_download.py script to create website downloads:</p>
+            <pre class="bg-dark p-3 rounded">python quick_download.py https://your-website-url.com</pre>
+        {% endif %}
+    </div>
+</body>
+</html>

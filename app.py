@@ -13,7 +13,7 @@ import queue
 
 import requests
 from bs4 import BeautifulSoup
-from flask import Flask, render_template, request, jsonify, send_file, session
+from flask import Flask, render_template, request, jsonify, send_file, session, make_response
 from flask_socketio import SocketIO, emit
 
 from crawler import WebCrawler
@@ -37,6 +37,62 @@ active_tasks = {}
 @app.route('/')
 def index():
     return render_template('index.html')
+
+@app.route('/scraper')
+def scraper():
+    return render_template('web_scraper.html')
+
+@app.route('/scrape', methods=['POST'])
+def scrape():
+    url = request.form.get('url')
+    if not url:
+        return render_template('web_scraper.html', error="Please enter a URL")
+    
+    try:
+        # Import web_scraper here to avoid circular imports
+        from web_scraper import get_website_text_content
+        
+        # Extract content using the web_scraper module
+        content = get_website_text_content(url)
+        
+        if not content:
+            return render_template('web_scraper.html', 
+                                  error="No main content could be extracted from this URL. The page might be empty, protected, or not accessible.",
+                                  url=url)
+        
+        return render_template('web_scraper.html', content=content, url=url)
+    
+    except Exception as e:
+        logger.error(f"Error extracting content: {str(e)}")
+        return render_template('web_scraper.html', 
+                              error=f"Error extracting content: {str(e)}",
+                              url=url)
+
+@app.route('/download_text', methods=['POST'])
+def download_text():
+    url = request.form.get('url', '')
+    content = request.form.get('content', '')
+    
+    if not content:
+        return render_template('web_scraper.html', error="No content to download")
+    
+    # Generate filename from URL
+    filename = url.replace('https://', '').replace('http://', '')
+    filename = filename.replace('/', '_').replace('.', '_')
+    filename = f"{filename}_{int(time.time())}.txt"
+    
+    # Create text file in memory
+    text_file = io.StringIO()
+    text_file.write(f"Source URL: {url}\n\n")
+    text_file.write(content)
+    text_file.seek(0)
+    
+    # Create response with file
+    response = make_response(text_file.getvalue())
+    response.headers["Content-Disposition"] = f"attachment; filename={filename}"
+    response.headers["Content-Type"] = "text/plain"
+    
+    return response
 
 @app.route('/crawl', methods=['POST'])
 def crawl():
