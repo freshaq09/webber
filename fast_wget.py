@@ -61,10 +61,15 @@ def crawl_with_wget_sync(url):
             check=False  # Don't raise exception on non-zero exit
         )
         
-        # Check if wget was successful
-        if process.returncode != 0:
+        # Check if wget was successful or partially successful
+        # Return code 8 means some URLs couldn't be downloaded, but the core site was likely downloaded
+        if process.returncode != 0 and process.returncode != 8:
             logger.error(f"wget failed with return code {process.returncode}: {process.stderr}")
             return None
+        elif process.returncode == 8:
+            # This is a partial success - some URLs were too long or had other issues
+            logger.warning(f"wget completed with partial success (code 8). Some URLs may have been skipped.")
+            # Continue processing since we likely have most of the content
         
         # Find the domain directory (wget creates a directory structure)
         domain_dir = temp_dir / domain
@@ -85,9 +90,7 @@ def crawl_with_wget_sync(url):
             
         # Create ZIP file
         timestamp = int(time.time())
-        # Ensure domain is not empty, otherwise use 'website' as fallback
-        safe_domain = domain.replace('.', '_') if domain else "website"
-        zip_filename = f"{safe_domain}_{timestamp}.zip"
+        zip_filename = f"{domain.replace('.', '_')}_{timestamp}.zip"
         zip_path = str(Path(".") / zip_filename)  # Save to current directory for easy access
         
         logger.info(f"Creating ZIP file at {zip_path}")
