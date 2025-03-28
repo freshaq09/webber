@@ -94,8 +94,8 @@ class WebCrawler:
             # Create necessary directories
             self._create_directory_structure()
             
-            # Process the queue - limit to 50 URLs to ensure timely completion
-            max_urls = 50
+            # Process the queue - limit to 15 URLs to ensure timely completion
+            max_urls = 15
             processed_urls = 0
             
             while self.queue and not self._stop_event.is_set() and processed_urls < max_urls:
@@ -117,12 +117,12 @@ class WebCrawler:
                 self.stats["processed_urls"] = self.processed_count
                 processed_urls += 1
                 
-                # Update progress more frequently
-                if processed_urls % 5 == 0:
+                # Update progress more frequently (every 2 URLs)
+                if processed_urls % 2 == 0:
                     progress = min(int((processed_urls / max_urls) * 100), 99)
                     self._queue_status_update(f"Processed {processed_urls} of {max_urls} URLs", progress)
                 
-                # Throttle requests
+                # Throttle requests with shorter delay for faster completion
                 time.sleep(self.throttle_delay)
             
             # Create redirects file for Netlify

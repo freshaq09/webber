@@ -62,7 +62,7 @@ def crawl():
     session['task_id'] = task_id
     
     # Initialize crawler with faster throttle
-    crawler = WebCrawler(url, task_id, socketio, throttle_delay=0.05)
+    crawler = WebCrawler(url, task_id, socketio, throttle_delay=0.01)
     active_tasks[task_id] = {
         "crawler": crawler,
         "status": "starting",
