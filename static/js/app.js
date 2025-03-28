@@ -27,13 +27,18 @@ const initialSection = document.getElementById('initialSection');
 
 // Initialize socket.io connection
 function initializeSocket() {
-    socket = io.connect(window.location.origin);
+    socket = io.connect(window.location.origin, {
+        transports: ['polling', 'websocket'],
+        reconnectionAttempts: 5,
+        reconnectionDelay: 1000
+    });
     
     socket.on('connect', () => {
         console.log('Connected to server');
     });
     
     socket.on('status_update', (data) => {
+        console.log('Status update received:', data);
         if (data.task_id === currentTaskId) {
             updateProgress(data.message, data.progress, data.stats);
         }
@@ -45,6 +50,10 @@ function initializeSocket() {
         if (currentTaskId) {
             startStatusChecking();
         }
+    });
+    
+    socket.on('error', (error) => {
+        console.error('Socket error:', error);
     });
 }
 

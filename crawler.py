@@ -139,12 +139,15 @@ class WebCrawler:
             try:
                 if not self.message_queue.empty():
                     message, progress = self.message_queue.get(timeout=0.1)
-                    self.socketio.emit('status_update', {
-                        'task_id': self.task_id,
-                        'message': message,
-                        'progress': progress,
-                        'stats': self.stats
-                    })
+                    try:
+                        self.socketio.emit('status_update', {
+                            'task_id': self.task_id,
+                            'message': message,
+                            'progress': progress,
+                            'stats': self.stats
+                        }, namespace='/')
+                    except Exception as emit_error:
+                        logger.error(f"Socket emit error: {emit_error}")
                     self.message_queue.task_done()
                 else:
                     time.sleep(0.1)
