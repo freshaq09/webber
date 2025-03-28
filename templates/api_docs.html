@@ -1,96 +1,183 @@
 {% extends 'base.html' %}
 
-{% block title %}API Documentation{% endblock %}
+{% block title %}API Documentation - Website to ZIP{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
+<div class="container py-5">
     <div class="row">
-        <div class="col-md-10 mx-auto">
-            <div class="card shadow-sm mb-5">
-                <div class="card-body">
-                    <h1 class="mb-4">Website Downloader API Documentation</h1>
+        <div class="col-lg-10 mx-auto">
+            <div class="card animate-fade-in mb-5">
+                <div class="card-header api-key-header">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-book me-2"></i>
+                        <h2 class="mb-0">API Documentation</h2>
+                    </div>
+                </div>
+                <div class="card-body p-4">
+                    <h1 class="mb-4 fw-bold animate-fade-in" style="animation-delay: 0.1s;">Website to ZIP API</h1>
                     
-                    <p class="lead">
-                        Our API allows you to programmatically download entire websites as Netlify-ready ZIP archives.
-                        With a single API call, you can generate a deployable ZIP file for any website.
+                    <p class="lead mb-4 animate-fade-in" style="animation-delay: 0.2s;">
+                        Our powerful API allows you to programmatically download entire websites as Netlify-ready ZIP archives.
+                        With a single API call, you can generate a deployable ZIP file for any website in less than a second.
                     </p>
                     
-                    <div class="alert alert-info">
-                        <strong>Need an API key?</strong> 
-                        {% if current_user.is_authenticated %}
-                            <a href="{{ url_for('dashboard') }}" class="alert-link">Visit your dashboard</a> to manage your API keys.
-                        {% else %}
-                            <a href="{{ url_for('register') }}" class="alert-link">Register for an account</a> to get your API key.
-                        {% endif %}
+                    <div class="alert alert-info animate-fade-in" style="animation-delay: 0.3s; background-color: rgba(46, 204, 113, 0.1); color: var(--primary-dark); border: none;">
+                        <div class="d-flex">
+                            <div class="me-3">
+                                <i class="fas fa-key fa-2x" style="color: var(--primary-color);"></i>
+                            </div>
+                            <div>
+                                <strong class="d-block mb-1" style="color: var(--primary-dark);">Need an API key?</strong> 
+                                {% if current_user.is_authenticated %}
+                                    <a href="{{ url_for('dashboard') }}" class="fw-bold" style="color: var(--primary-color);">Visit your dashboard</a> to manage your API keys.
+                                {% else %}
+                                    <a href="{{ url_for('register') }}" class="fw-bold" style="color: var(--primary-color);">Register for an account</a> to get your API key instantly.
+                                {% endif %}
+                            </div>
+                        </div>
                     </div>
                     
-                    <h2 class="mt-4 mb-3">Authentication</h2>
-                    <p>
-                        All API requests require authentication using an API key. You can include your API key in one of two ways:
-                    </p>
+                    <h2 class="mt-5 mb-4 fw-bold animate-fade-in" style="animation-delay: 0.4s;">
+                        <i class="fas fa-lock me-2" style="color: var(--primary-color);"></i>Authentication
+                    </h2>
+                    <div class="animate-fade-in" style="animation-delay: 0.5s;">
+                        <p>
+                            All API requests require authentication using an API key. You can include your API key in one of two ways:
+                        </p>
+                        
+                        <div class="row mt-4">
+                            <div class="col-md-6">
+                                <div class="card h-100" style="border-left: 4px solid var(--primary-color);">
+                                    <div class="card-body">
+                                        <h5 class="fw-bold"><i class="fas fa-file-code me-2" style="color: var(--primary-color);"></i>Header Authentication</h5>
+                                        <p>Include your API key in the request headers (preferred method):</p>
+                                        <pre class="p-3 rounded" style="background-color: #2c3e50; color: #ecf0f1;"><code>X-API-Key: YOUR_API_KEY</code></pre>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card h-100" style="border-left: 4px solid var(--primary-color);">
+                                    <div class="card-body">
+                                        <h5 class="fw-bold"><i class="fas fa-link me-2" style="color: var(--primary-color);"></i>Query Parameter</h5>
+                                        <p>Append your API key as a query parameter to the URL:</p>
+                                        <pre class="p-3 rounded" style="background-color: #2c3e50; color: #ecf0f1;"><code>?api_key=YOUR_API_KEY</code></pre>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     
-                    <ul>
-                        <li>As a header: <code>X-API-Key: YOUR_API_KEY</code></li>
-                        <li>As a query parameter: <code>?api_key=YOUR_API_KEY</code></li>
-                    </ul>
+                    <h2 class="mt-5 mb-4 fw-bold animate-fade-in" style="animation-delay: 0.6s;">
+                        <i class="fas fa-server me-2" style="color: var(--primary-color);"></i>Endpoints
+                    </h2>
                     
-                    <h2 class="mt-4 mb-3">Endpoints</h2>
-                    
-                    <div class="card mb-4">
-                        <div class="card-header d-flex justify-content-between align-items-center">
-                            <span class="badge bg-success">POST</span>
-                            <code class="ms-3">/api/v1/fast_wget</code>
-                            <span class="ms-auto">Download a website</span>
+                    <div class="card mb-4 animate-fade-in" style="animation-delay: 0.7s; border: none; box-shadow: var(--shadow-md);">
+                        <div class="card-header" style="background-color: rgba(46, 204, 113, 0.1); border: none;">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <span class="badge" style="background-color: var(--primary-color);">POST</span>
+                                    <code class="ms-3 fw-bold">/api/v1/fast_wget</code>
+                                </div>
+                                <span class="ms-auto text-muted">Fast Website Download</span>
+                            </div>
                         </div>
                         <div class="card-body">
-                            <p>
-                                Download an entire website and receive a Netlify-ready ZIP file in return.
-                                This endpoint uses our high-speed wget implementation.
-                            </p>
+                            <div class="mb-4">
+                                <h5 class="fw-bold"><i class="fas fa-info-circle me-2" style="color: var(--primary-color);"></i>Description</h5>
+                                <p>
+                                    Download an entire website and receive a Netlify-ready ZIP file in return.
+                                    This endpoint uses our high-speed wget implementation which typically completes
+                                    in under 1 second. The resulting ZIP file is ready for immediate deployment to Netlify.
+                                </p>
+                            </div>
                             
-                            <h5>Request Body (JSON)</h5>
-                            <pre class="bg-light p-3 rounded"><code>{
+                            <div class="mb-4">
+                                <h5 class="fw-bold"><i class="fas fa-arrow-right me-2" style="color: var(--primary-color);"></i>Request Body (JSON)</h5>
+                                <pre class="p-3 rounded" style="background-color: #2c3e50; color: #ecf0f1;"><code>{
   "url": "https://example.com"
-}
-</code></pre>
+}</code></pre>
+                            </div>
                             
-                            <h5 class="mt-3">Parameters</h5>
-                            <table class="table table-bordered">
-                                <thead>
-                                    <tr>
-                                        <th>Parameter</th>
-                                        <th>Type</th>
-                                        <th>Required</th>
-                                        <th>Description</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td><code>url</code></td>
-                                        <td>string</td>
-                                        <td>Yes</td>
-                                        <td>The URL of the website to download</td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                            <div class="mb-4">
+                                <h5 class="fw-bold"><i class="fas fa-list me-2" style="color: var(--primary-color);"></i>Parameters</h5>
+                                <div class="table-responsive">
+                                    <table class="table">
+                                        <thead style="background-color: rgba(46, 204, 113, 0.05);">
+                                            <tr>
+                                                <th>Parameter</th>
+                                                <th>Type</th>
+                                                <th>Required</th>
+                                                <th>Description</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td><code>url</code></td>
+                                                <td><span class="badge bg-secondary">string</span></td>
+                                                <td><span class="badge" style="background-color: var(--primary-color);">Yes</span></td>
+                                                <td>The complete URL of the website to download (including https://)</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
                             
-                            <h5 class="mt-3">Response</h5>
-                            <p>
-                                The response will be a ZIP file containing the downloaded website.
-                                The <code>Content-Type</code> header will be set to <code>application/zip</code>.
-                            </p>
+                            <div class="mb-4">
+                                <h5 class="fw-bold"><i class="fas fa-reply me-2" style="color: var(--primary-color);"></i>Response</h5>
+                                <div class="card" style="border-left: 4px solid var(--primary-color);">
+                                    <div class="card-body">
+                                        <p class="mb-2">
+                                            The response will be a ZIP file containing the downloaded website with the following characteristics:
+                                        </p>
+                                        <ul class="mb-0">
+                                            <li>Content-Type: <code>application/zip</code></li>
+                                            <li>Content-Disposition: <code>attachment; filename="website.zip"</code></li>
+                                            <li>Netlify-ready structure with preserved site navigation</li>
+                                            <li>Includes HTML, CSS, JavaScript, images, and other assets</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
                             
-                            <h5 class="mt-3">Example</h5>
-                            <p>Using curl:</p>
-                            <pre class="bg-light p-3 rounded"><code>curl -X POST \
+                            <div class="mb-4">
+                                <h5 class="fw-bold"><i class="fas fa-code me-2" style="color: var(--primary-color);"></i>Examples</h5>
+                                
+                                <div class="accordion" id="examplesAccordion">
+                                    <div class="accordion-item">
+                                        <h2 class="accordion-header" id="curlExample">
+                                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#curlExampleContent" aria-expanded="true" aria-controls="curlExampleContent">
+                                                <i class="fas fa-terminal me-2"></i>cURL Example
+                                            </button>
+                                        </h2>
+                                        <div id="curlExampleContent" class="accordion-collapse collapse show" aria-labelledby="curlExample">
+                                            <div class="accordion-body">
+                                                <div class="position-relative">
+                                                    <pre class="p-3 rounded" style="background-color: #2c3e50; color: #ecf0f1;"><code>curl -X POST \
   -H "X-API-Key: YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"url": "https://example.com"}' \
   --output website.zip \
-  https://your-app-url.replit.app/api/v1/fast_wget</code></pre>
-                            
-                            <p>Using JavaScript:</p>
-                            <pre class="bg-light p-3 rounded"><code>const response = await fetch('https://your-app-url.replit.app/api/v1/fast_wget', {
+  {{ request.host_url }}api/v1/fast_wget</code></pre>
+                                                    <button class="position-absolute top-0 end-0 btn btn-sm btn-outline-light m-2" 
+                                                            onclick="copyToClipboard(this.previousElementSibling.textContent)" 
+                                                            title="Copy to clipboard">
+                                                        <i class="fas fa-copy"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="accordion-item">
+                                        <h2 class="accordion-header" id="jsExample">
+                                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#jsExampleContent" aria-expanded="false" aria-controls="jsExampleContent">
+                                                <i class="fab fa-js me-2"></i>JavaScript Example
+                                            </button>
+                                        </h2>
+                                        <div id="jsExampleContent" class="accordion-collapse collapse" aria-labelledby="jsExample">
+                                            <div class="accordion-body">
+                                                <div class="position-relative">
+                                                    <pre class="p-3 rounded" style="background-color: #2c3e50; color: #ecf0f1;"><code>const response = await fetch('{{ request.host_url }}api/v1/fast_wget', {
   method: 'POST',
   headers: {
     'X-API-Key': 'YOUR_API_KEY',
@@ -110,59 +197,242 @@ if (response.ok) {
   a.download = 'website.zip';
   a.click();
 }</code></pre>
+                                                    <button class="position-absolute top-0 end-0 btn btn-sm btn-outline-light m-2" 
+                                                            onclick="copyToClipboard(this.previousElementSibling.textContent)" 
+                                                            title="Copy to clipboard">
+                                                        <i class="fas fa-copy"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="accordion-item">
+                                        <h2 class="accordion-header" id="pythonExample">
+                                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#pythonExampleContent" aria-expanded="false" aria-controls="pythonExampleContent">
+                                                <i class="fab fa-python me-2"></i>Python Example
+                                            </button>
+                                        </h2>
+                                        <div id="pythonExampleContent" class="accordion-collapse collapse" aria-labelledby="pythonExample">
+                                            <div class="accordion-body">
+                                                <div class="position-relative">
+                                                    <pre class="p-3 rounded" style="background-color: #2c3e50; color: #ecf0f1;"><code>import requests
+
+url = "{{ request.host_url }}api/v1/fast_wget"
+headers = {
+    "X-API-Key": "YOUR_API_KEY",
+    "Content-Type": "application/json"
+}
+payload = {
+    "url": "https://example.com"
+}
+
+response = requests.post(url, json=payload, headers=headers)
+
+if response.status_code == 200:
+    # Save the ZIP file
+    with open("website.zip", "wb") as f:
+        f.write(response.content)
+    print("Website downloaded successfully!")
+else:
+    print(f"Error: {response.status_code}")
+    print(response.text)</code></pre>
+                                                    <button class="position-absolute top-0 end-0 btn btn-sm btn-outline-light m-2" 
+                                                            onclick="copyToClipboard(this.previousElementSibling.textContent)" 
+                                                            title="Copy to clipboard">
+                                                        <i class="fas fa-copy"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     
-                    <h2 class="mt-4 mb-3">Error Responses</h2>
-                    <p>
-                        The API returns standard HTTP status codes to indicate success or failure.
-                        In case of an error, the response body will contain an error message:
-                    </p>
-                    <pre class="bg-light p-3 rounded"><code>{
+                    <h2 class="mt-5 mb-4 fw-bold animate-fade-in" style="animation-delay: 0.8s;">
+                        <i class="fas fa-exclamation-triangle me-2" style="color: var(--primary-color);"></i>Error Responses
+                    </h2>
+                    <div class="animate-fade-in" style="animation-delay: 0.9s;">
+                        <p>
+                            The API returns standard HTTP status codes to indicate success or failure.
+                            In case of an error, the response body will contain an error message in JSON format:
+                        </p>
+                        <div class="position-relative">
+                            <pre class="p-3 rounded" style="background-color: #2c3e50; color: #ecf0f1;"><code>{
   "error": "Error message description"
 }</code></pre>
+                        </div>
+                        
+                        <div class="table-responsive mt-4">
+                            <table class="table">
+                                <thead style="background-color: rgba(46, 204, 113, 0.05);">
+                                    <tr>
+                                        <th>Status Code</th>
+                                        <th>Name</th>
+                                        <th>Description</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><span class="badge" style="background-color: var(--primary-color);">200</span></td>
+                                        <td>Success</td>
+                                        <td>The request was successful and the ZIP file was generated</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="badge bg-danger">400</span></td>
+                                        <td>Bad Request</td>
+                                        <td>The request is invalid (e.g., missing URL, malformed JSON)</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="badge bg-warning text-dark">401</span></td>
+                                        <td>Unauthorized</td>
+                                        <td>API key is missing or invalid</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="badge bg-secondary">500</span></td>
+                                        <td>Server Error</td>
+                                        <td>Something went wrong on our end while processing the request</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                     
-                    <table class="table table-bordered mt-3">
-                        <thead>
-                            <tr>
-                                <th>Status Code</th>
-                                <th>Description</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>200</td>
-                                <td>Success - The request was successful</td>
-                            </tr>
-                            <tr>
-                                <td>400</td>
-                                <td>Bad Request - The request is invalid</td>
-                            </tr>
-                            <tr>
-                                <td>401</td>
-                                <td>Unauthorized - API key is missing or invalid</td>
-                            </tr>
-                            <tr>
-                                <td>500</td>
-                                <td>Server Error - Something went wrong on our end</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                    <h2 class="mt-5 mb-4 fw-bold animate-fade-in" style="animation-delay: 1s;">
+                        <i class="fas fa-tachometer-alt me-2" style="color: var(--primary-color);"></i>Rate Limits
+                    </h2>
+                    <div class="card animate-fade-in" style="animation-delay: 1.1s; border-left: 4px solid var(--primary-color);">
+                        <div class="card-body">
+                            <p class="mb-0">
+                                <i class="fas fa-info-circle me-2" style="color: var(--primary-color);"></i>
+                                There are currently no rate limits on the API, but please be considerate
+                                and avoid sending excessive requests. Our high-speed implementation is designed
+                                to handle your website download needs efficiently. Excessive usage may result in your API
+                                key being temporarily or permanently disabled.
+                            </p>
+                        </div>
+                    </div>
                     
-                    <h2 class="mt-4 mb-3">Rate Limits</h2>
-                    <p>
-                        There are currently no rate limits on the API, but please be considerate
-                        and avoid sending excessive requests. Excessive usage may result in your API
-                        key being temporarily or permanently disabled.
-                    </p>
+                    <h2 class="mt-5 mb-4 fw-bold animate-fade-in" style="animation-delay: 1.2s;">
+                        <i class="fas fa-headset me-2" style="color: var(--primary-color);"></i>Support
+                    </h2>
+                    <div class="row animate-fade-in" style="animation-delay: 1.3s;">
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100" style="border-left: 4px solid var(--primary-color);">
+                                <div class="card-body">
+                                    <h5 class="fw-bold"><i class="fas fa-book-open me-2" style="color: var(--primary-color);"></i>Documentation</h5>
+                                    <p>
+                                        Comprehensive documentation is available on this page to help you integrate
+                                        with our API. Code examples are provided in multiple languages for quick implementation.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100" style="border-left: 4px solid var(--primary-color);">
+                                <div class="card-body">
+                                    <h5 class="fw-bold"><i class="fas fa-envelope me-2" style="color: var(--primary-color);"></i>Contact Support</h5>
+                                    <p>
+                                        If you have any questions or need help using the API, please contact our support team
+                                        through your account dashboard.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     
-                    <h2 class="mt-4 mb-3">Support</h2>
-                    <p>
-                        If you have any questions or need help using the API, please contact our support team.
-                    </p>
+                    <div class="alert alert-info mt-4 animate-fade-in" style="animation-delay: 1.4s; background-color: rgba(46, 204, 113, 0.1); color: var(--primary-dark); border: none;">
+                        <div class="d-flex">
+                            <div class="me-3">
+                                <i class="fas fa-lightbulb fa-2x" style="color: var(--primary-color);"></i>
+                            </div>
+                            <div>
+                                <strong class="d-block mb-1" style="color: var(--primary-dark);">Ready to get started?</strong> 
+                                {% if current_user.is_authenticated %}
+                                    <a href="{{ url_for('dashboard') }}" class="fw-bold" style="color: var(--primary-color);">Visit your dashboard</a> to find your API keys and start downloading websites programmatically.
+                                {% else %}
+                                    <a href="{{ url_for('register') }}" class="fw-bold" style="color: var(--primary-color);">Register for an account</a> to get your API key instantly and start using our powerful Website to ZIP API.
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Copy text to clipboard function
+    function copyToClipboard(text) {
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        
+        // Show toast notification
+        const toast = document.createElement('div');
+        toast.className = 'position-fixed bottom-0 end-0 p-3';
+        toast.style.zIndex = '5';
+        toast.innerHTML = `
+            <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="toast-header" style="background-color: var(--primary-color); color: white;">
+                    <i class="fas fa-check-circle me-2"></i>
+                    <strong class="me-auto">Copied!</strong>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+                <div class="toast-body">
+                    Code snippet copied to clipboard
+                </div>
+            </div>
+        `;
+        document.body.appendChild(toast);
+        
+        // Remove the toast after 3 seconds
+        setTimeout(() => {
+            toast.remove();
+        }, 3000);
+    }
+    
+    // Add animation to the page elements on load
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add animation to example code blocks
+        const codeBlocks = document.querySelectorAll('pre');
+        codeBlocks.forEach((block, index) => {
+            block.style.transition = 'all 0.3s ease';
+            
+            block.addEventListener('mouseover', function() {
+                this.style.transform = 'scale(1.01)';
+                this.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.2)';
+            });
+            
+            block.addEventListener('mouseout', function() {
+                this.style.transform = '';
+                this.style.boxShadow = '';
+            });
+        });
+        
+        // Add hover effects to all cards
+        const cards = document.querySelectorAll('.card:not(.accordion-item)');
+        cards.forEach(card => {
+            card.style.transition = 'all 0.3s ease';
+            
+            card.addEventListener('mouseover', function() {
+                this.style.transform = 'translateY(-3px)';
+                this.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.1)';
+            });
+            
+            card.addEventListener('mouseout', function() {
+                this.style.transform = '';
+                this.style.boxShadow = '';
+            });
+        });
+    });
+</script>
 {% endblock %}

@@ -3,46 +3,29 @@
 {% block title %}Dashboard - Website Downloader{% endblock %}
 
 {% block content %}
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container">
-            <a class="navbar-brand" href="{{ url_for('index') }}">Website Downloader</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('index') }}">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link active" href="{{ url_for('dashboard') }}">Dashboard</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
 
     <div class="container py-5">
         <div class="row">
             <div class="col-md-12">
-                <h1 class="mb-4">Welcome, {{ current_user.name }}</h1>
+                <div class="animate-fade-in">
+                    <h1 class="mb-4 fw-bold">Welcome, {{ current_user.name }}</h1>
+                    
+                    <!-- Flash messages -->
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ category }} animate-fade-in">{{ message }}</div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+                </div>
                 
-                <!-- Flash messages -->
-                {% with messages = get_flashed_messages(with_categories=true) %}
-                    {% if messages %}
-                        {% for category, message in messages %}
-                            <div class="alert alert-{{ category }}">{{ message }}</div>
-                        {% endfor %}
-                    {% endif %}
-                {% endwith %}
-                
-                <div class="card shadow-sm mb-4">
-                    <div class="card-header bg-primary text-white">
-                        <h3 class="card-title mb-0">Your API Keys</h3>
+                <div class="card mb-4 animate-fade-in" style="animation-delay: 0.1s;">
+                    <div class="card-header api-key-header">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-key me-2"></i>
+                            <h3 class="card-title mb-0">Your API Keys</h3>
+                        </div>
                     </div>
                     <div class="card-body">
                         <p class="card-text">Use these API keys to access the Website Downloader API programmatically.</p>
@@ -96,48 +79,136 @@
                     </div>
                 </div>
                 
-                <div class="card shadow-sm">
-                    <div class="card-header bg-secondary text-white">
-                        <h3 class="card-title mb-0">API Documentation</h3>
+                <div class="card animate-fade-in" style="animation-delay: 0.2s;">
+                    <div class="card-header api-key-header">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-book me-2"></i>
+                            <h3 class="card-title mb-0">API Documentation</h3>
+                        </div>
                     </div>
                     <div class="card-body">
-                        <h4>Fast Website Download API</h4>
-                        <p>Download a complete website as a ZIP file with a single API call. The ZIP file is compatible with Netlify Drop and ready for immediate hosting.</p>
+                        <h4 class="mb-3 fw-bold"><i class="fas fa-bolt me-2" style="color: var(--primary-color);"></i>Fast Website Download API</h4>
+                        <p class="mb-4">Download a complete website as a ZIP file with a single API call. The ZIP file is compatible with Netlify Drop and ready for immediate hosting.</p>
                         
-                        <div class="card bg-dark text-white mb-3">
-                            <div class="card-header">
-                                <strong>Endpoint:</strong> <code>POST /api/v1/fast_wget</code>
+                        <div class="card mb-4 animate-fade-in" style="animation-delay: 0.3s; background-color: #f8f9fa; border: none; box-shadow: var(--shadow-md);">
+                            <div class="card-header" style="background-color: rgba(46, 204, 113, 0.1); border: none;">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-code me-2" style="color: var(--primary-color);"></i>
+                                    <strong>Endpoint:</strong> <code class="ms-2">POST /api/v1/fast_wget</code>
+                                </div>
                             </div>
                             <div class="card-body">
-                                <p><strong>Request Headers:</strong></p>
-                                <pre><code>Content-Type: application/json
+                                <div class="mb-3">
+                                    <h6 class="fw-bold"><i class="fas fa-arrow-right me-2" style="color: var(--primary-color);"></i>Request Headers:</h6>
+                                    <pre class="p-3 rounded" style="background-color: #2c3e50; color: #ecf0f1;"><code>Content-Type: application/json
 X-API-Key: your-api-key</code></pre>
+                                </div>
                                 
-                                <p><strong>Request Body:</strong></p>
-                                <pre><code>{
+                                <div class="mb-3">
+                                    <h6 class="fw-bold"><i class="fas fa-arrow-right me-2" style="color: var(--primary-color);"></i>Request Body:</h6>
+                                    <pre class="p-3 rounded" style="background-color: #2c3e50; color: #ecf0f1;"><code>{
   "url": "https://example.com"
 }</code></pre>
+                                </div>
                                 
-                                <p><strong>Response:</strong> ZIP file download</p>
+                                <div class="mb-3">
+                                    <h6 class="fw-bold"><i class="fas fa-arrow-right me-2" style="color: var(--primary-color);"></i>Response:</h6>
+                                    <p class="mb-0 ms-4">ZIP file download containing the entire website</p>
+                                </div>
                                 
-                                <p><strong>Errors:</strong></p>
-                                <pre><code>400 Bad Request - Missing or invalid URL
+                                <div class="mb-3">
+                                    <h6 class="fw-bold"><i class="fas fa-exclamation-triangle me-2" style="color: #e74c3c;"></i>Error Responses:</h6>
+                                    <pre class="p-3 rounded" style="background-color: #2c3e50; color: #ecf0f1;"><code>400 Bad Request - Missing or invalid URL
 401 Unauthorized - Missing or invalid API key
 500 Internal Server Error - Download failed</code></pre>
+                                </div>
                             </div>
                         </div>
                         
-                        <h5>Example Usage (curl):</h5>
-                        <pre><code>curl -X POST \
+                        <div class="animate-fade-in" style="animation-delay: 0.4s;">
+                            <h5 class="fw-bold mb-3"><i class="fas fa-terminal me-2" style="color: var(--primary-color);"></i>Example Usage (curl):</h5>
+                            <div class="position-relative">
+                                <pre class="p-3 rounded" style="background-color: #2c3e50; color: #ecf0f1;"><code>curl -X POST \
   -H "Content-Type: application/json" \
   -H "X-API-Key: {{ api_keys[0].key if api_keys else 'YOUR_API_KEY' }}" \
   -d '{"url": "https://example.com"}' \
   -o website.zip \
   {{ request.host_url }}api/v1/fast_wget</code></pre>
+                                <button class="position-absolute top-0 end-0 btn btn-sm btn-outline-light m-2" 
+                                        onclick="copyToClipboard(this.previousElementSibling.textContent)" 
+                                        title="Copy to clipboard">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </div>
+                            <div class="alert alert-info mt-3">
+                                <i class="fas fa-info-circle me-2"></i>
+                                Test your API key right away! Copy the example above and replace <code>example.com</code> with any website you want to download.
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Copy text to clipboard function
+    function copyToClipboard(text) {
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        
+        // Show toast notification
+        const toast = document.createElement('div');
+        toast.className = 'position-fixed bottom-0 end-0 p-3';
+        toast.style.zIndex = '5';
+        toast.innerHTML = `
+            <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="toast-header" style="background-color: var(--primary-color); color: white;">
+                    <i class="fas fa-check-circle me-2"></i>
+                    <strong class="me-auto">Copied!</strong>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+                <div class="toast-body">
+                    Command copied to clipboard
+                </div>
+            </div>
+        `;
+        document.body.appendChild(toast);
+        
+        // Remove the toast after 3 seconds
+        setTimeout(() => {
+            toast.remove();
+        }, 3000);
+    }
+    
+    // Add animation to API keys table
+    document.addEventListener('DOMContentLoaded', function() {
+        const tableRows = document.querySelectorAll('tbody tr');
+        tableRows.forEach((row, index) => {
+            row.classList.add('animate-fade-in');
+            row.style.animationDelay = `${0.1 + (index * 0.05)}s`;
+        });
+        
+        // Add hover animation to the Create New API Key button
+        const createButton = document.querySelector('button[type="submit"]');
+        if (createButton) {
+            createButton.addEventListener('mouseover', function() {
+                this.style.transform = 'translateY(-2px)';
+                this.style.boxShadow = '0 5px 15px rgba(46, 204, 113, 0.3)';
+            });
+            
+            createButton.addEventListener('mouseout', function() {
+                this.style.transform = '';
+                this.style.boxShadow = '';
+            });
+        }
+    });
+</script>
 {% endblock %}
