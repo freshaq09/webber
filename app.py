@@ -38,6 +38,24 @@ active_tasks = {}
 def index():
     return render_template('index.html')
 
+@app.route('/direct_download')
+def direct_download():
+    """Provide direct download of the latest ZIP file."""
+    try:
+        # Find the most recent zip file in the root directory
+        zip_files = [f for f in os.listdir('.') if f.endswith('.zip')]
+        if not zip_files:
+            return jsonify({"error": "No ZIP files available"}), 404
+        
+        # Sort by modification time, newest first
+        zip_files.sort(key=lambda x: os.path.getmtime(x), reverse=True)
+        latest_zip = zip_files[0]
+        
+        return send_file(latest_zip, as_attachment=True)
+    except Exception as e:
+        logger.error(f"Direct download error: {e}")
+        return jsonify({"error": f"Error providing direct download: {str(e)}"}), 500
+
 @app.route('/scraper')
 def scraper():
     return render_template('web_scraper.html')
