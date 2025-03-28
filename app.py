@@ -10,12 +10,16 @@ import uuid
 from pathlib import Path
 import threading
 import queue
+import secrets
+from functools import wraps
 
 import requests
 from bs4 import BeautifulSoup
-from flask import Flask, render_template, request, jsonify, send_file, session, make_response
+from flask import Flask, render_template, request, jsonify, send_file, session, redirect, url_for, flash, make_response
+from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from flask_socketio import SocketIO, emit
 
+from models import db, User, ApiKey
 from crawler import WebCrawler
 
 # Configure logging
@@ -25,7 +29,46 @@ logger = logging.getLogger(__name__)
 # Create Flask app
 app = Flask(__name__)
 app.secret_key = os.environ.get("SESSION_SECRET", "default_secret_key")
+app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", "sqlite:///site.db")
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
+# Initialize extensions
+db.init_app(app)
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode='threading')
+login_manager = LoginManager(app)
+login_manager.login_view = 'login'
+login_manager.login_message = 'Please log in to access this page.'
+
+# Create database tables
+with app.app_context():
+    db.create_all()
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
+
+# API key decorator for API routes
+def require_api_key(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        # Get the API key from header or query string
+        api_key = request.headers.get('X-API-Key') or request.args.get('api_key')
+        
+        if not api_key:
+            return jsonify({"error": "API key is required"}), 401
+            
+        # Find the key in the database
+        key_record = ApiKey.query.filter_by(key=api_key).first()
+        if not key_record:
+            return jsonify({"error": "Invalid API key"}), 401
+            
+        # Update last used timestamp
+        key_record.mark_used()
+        
+        # Add the user to the request context
+        request.user = key_record.user
+        return f(*args, **kwargs)
+    return decorated_function
 
 # Create a directory for temporary storage if it doesn't exist
 temp_dir = Path("temp")
@@ -487,3 +530,153 @@ def page_not_found(e):
 @app.errorhandler(500)
 def server_error(e):
     return jsonify({"error": "Server error occurred"}), 500
+
+# Authentication routes
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        email = request.form.get('email')
+        password = request.form.get('password')
+        name = request.form.get('name')
+        
+        # Validate input
+        if not email or not password or not name:
+            flash('All fields are required', 'danger')
+            return render_template('register.html')
+        
+        # Check if user already exists
+        if User.query.filter_by(email=email).first():
+            flash('Email already registered', 'danger')
+            return render_template('register.html')
+        
+        # Create new user
+        user = User(email=email, name=name)
+        user.set_password(password)
+        db.session.add(user)
+        db.session.commit()
+        
+        # Generate initial API key
+        user.generate_api_key("Default Key")
+        
+        flash('Registration successful! Please log in.', 'success')
+        return redirect(url_for('login'))
+    
+    return render_template('register.html')
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        email = request.form.get('email')
+        password = request.form.get('password')
+        
+        # Validate input
+        if not email or not password:
+            flash('Email and password are required', 'danger')
+            return render_template('login.html')
+        
+        # Find user
+        user = User.query.filter_by(email=email).first()
+        if not user or not user.check_password(password):
+            flash('Invalid email or password', 'danger')
+            return render_template('login.html')
+        
+        # Log in user
+        login_user(user)
+        next_page = request.args.get('next', url_for('dashboard'))
+        return redirect(next_page)
+    
+    return render_template('login.html')
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('index'))
+
+@app.route('/dashboard')
+@login_required
+def dashboard():
+    """User dashboard for managing API keys"""
+    api_keys = current_user.api_keys
+    return render_template('dashboard.html', api_keys=api_keys)
+
+@app.route('/api_keys/create', methods=['POST'])
+@login_required
+def create_api_key():
+    """Create a new API key for the current user"""
+    name = request.form.get('name', 'New Key')
+    api_key = current_user.generate_api_key(name)
+    flash(f'API key "{name}" created successfully', 'success')
+    return redirect(url_for('dashboard'))
+
+@app.route('/api_keys/delete/<int:key_id>', methods=['POST'])
+@login_required
+def delete_api_key(key_id):
+    """Delete an API key"""
+    api_key = ApiKey.query.get_or_404(key_id)
+    
+    # Ensure the key belongs to the current user
+    if api_key.user_id != current_user.id:
+        flash('Access denied', 'danger')
+        return redirect(url_for('dashboard'))
+    
+    key_name = api_key.name
+    db.session.delete(api_key)
+    db.session.commit()
+    
+    flash(f'API key "{key_name}" deleted successfully', 'success')
+    return redirect(url_for('dashboard'))
+
+# API endpoints
+@app.route('/api/v1/fast_wget', methods=['POST'])
+@require_api_key
+def api_fast_wget():
+    """API endpoint for fast wget download"""
+    url = request.json.get('url')
+    if not url:
+        return jsonify({"error": "No URL provided"}), 400
+    
+    # Validate URL
+    if not re.match(r'^https?://', url):
+        url = 'http://' + url
+    
+    try:
+        parsed_url = urlparse(url)
+        if not parsed_url.netloc:
+            return jsonify({"error": "Invalid URL"}), 400
+    except Exception as e:
+        logger.error(f"URL parsing error: {e}")
+        return jsonify({"error": f"Invalid URL: {str(e)}"}), 400
+    
+    try:
+        # Import and use the fast_wget module
+        from fast_wget import crawl_with_wget_sync
+        
+        # Show a message to the user
+        logger.info(f"API: Starting fast wget download for {url}")
+        
+        # Call the wget function (this will block until download is complete)
+        logger.debug(f"API: Calling crawl_with_wget_sync({url})")
+        zip_path = crawl_with_wget_sync(url)
+        logger.debug(f"API: crawl_with_wget_sync returned zip_path: {zip_path}")
+        
+        if not zip_path:
+            logger.error("API: crawl_with_wget_sync returned None")
+            return jsonify({"error": "Failed to download website with wget. The crawling process failed."}), 500
+            
+        if not os.path.exists(zip_path):
+            logger.error(f"API: Generated ZIP file does not exist at path: {zip_path}")
+            return jsonify({"error": f"Failed to download website with wget. ZIP file not found at {zip_path}."}), 500
+        
+        # Log success
+        logger.info(f"API: Successfully downloaded website. ZIP file at: {zip_path}")
+        
+        # Return the ZIP file directly
+        return send_file(zip_path, as_attachment=True, download_name=os.path.basename(zip_path))
+    
+    except Exception as e:
+        # Log the error with full traceback
+        import traceback
+        logger.error(f"API fast wget error: {e}")
+        logger.error(f"Traceback: {traceback.format_exc()}")
+        return jsonify({"error": f"Error downloading with wget: {str(e)}"}), 500

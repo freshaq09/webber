@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}Login - Website Downloader{% endblock %}
+
+{% block content %}
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card shadow">
+                    <div class="card-header bg-primary text-white">
+                        <h3 class="mb-0">Login</h3>
+                    </div>
+                    <div class="card-body">
+                        <form method="post" action="{{ url_for('login') }}">
+                            <!-- Flash messages -->
+                            {% with messages = get_flashed_messages(with_categories=true) %}
+                                {% if messages %}
+                                    {% for category, message in messages %}
+                                        <div class="alert alert-{{ category }}">{{ message }}</div>
+                                    {% endfor %}
+                                {% endif %}
+                            {% endwith %}
+                            
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email address</label>
+                                <input type="email" class="form-control" id="email" name="email" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Password</label>
+                                <input type="password" class="form-control" id="password" name="password" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100">Login</button>
+                        </form>
+                        <div class="mt-3 text-center">
+                            <p>Don't have an account? <a href="{{ url_for('register') }}">Register</a></p>
+                            <p>Or go back to <a href="{{ url_for('index') }}">home page</a></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
