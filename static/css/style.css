@@ -1,0 +1,123 @@
+/* Custom styles for the Website Crawler application */
+
+.site-header {
+    padding: 2rem 0;
+    background-color: var(--bs-dark);
+    color: white;
+}
+
+.progress-section {
+    padding: 2rem 0;
+}
+
+.url-input {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.submit-btn {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+.crawler-status {
+    min-height: 300px;
+}
+
+.status-message {
+    max-height: 150px;
+    overflow-y: auto;
+}
+
+.preview-card {
+    height: 100%;
+}
+
+.result-section {
+    margin-top: 2rem;
+    padding: 2rem;
+    border-radius: 0.5rem;
+    background-color: var(--bs-dark);
+}
+
+.stats-container {
+    margin-top: 1rem;
+}
+
+.stats-card {
+    background-color: var(--bs-dark);
+    border: 1px solid var(--bs-gray-700);
+}
+
+.illustration-container {
+    height: 200px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.illustration-container img {
+    max-width: 100%;
+    height: auto;
+}
+
+#crawlingProgress {
+    height: 10px;
+}
+
+.pulse-animation {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        opacity: 0.6;
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0.6;
+    }
+}
+
+.hidden {
+    display: none;
+}
+
+.url-form {
+    position: relative;
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.resource-icon {
+    font-size: 1.5rem;
+    margin-right: 0.5rem;
+}
+
+.resource-count {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.resource-label {
+    font-size: 0.9rem;
+    color: var(--bs-gray-500);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .illustration-container {
+        height: 150px;
+    }
+    
+    .site-header {
+        padding: 1rem 0;
+    }
+    
+    .stats-container .col-md-4 {
+        margin-bottom: 1rem;
+    }
+}

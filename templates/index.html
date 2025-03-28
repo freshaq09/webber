@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Website to ZIP - Netlify-ready Website Crawler</title>
+    
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css">
+    
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom styles -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <header class="site-header">
+        <div class="container text-center">
+            <h1>Website to ZIP</h1>
+            <p class="lead">Crawl any website and download it as a Netlify-ready ZIP archive</p>
+        </div>
+    </header>
+
+    <main class="container my-5">
+        <!-- Initial section with form and illustrations -->
+        <section id="initialSection" class="mb-5">
+            <div class="row mb-5">
+                <div class="col-md-6 mb-4">
+                    <div class="illustration-container">
+                        <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f" alt="Web scraping illustration" class="img-fluid">
+                    </div>
+                    <h3 class="mt-3 text-center">Unlimited Depth Crawling</h3>
+                    <p class="text-center">Our crawler follows all links within your domain and downloads everything needed for offline viewing.</p>
+                </div>
+                <div class="col-md-6 mb-4">
+                    <div class="illustration-container">
+                        <img src="https://images.unsplash.com/photo-1519389950473-47ba0277781c" alt="Web scraping illustration" class="img-fluid">
+                    </div>
+                    <h3 class="mt-3 text-center">Netlify Ready</h3>
+                    <p class="text-center">The generated ZIP file is ready for direct deployment to Netlify with proper file structure and redirects.</p>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-8 offset-lg-2">
+                    <div class="card shadow-sm">
+                        <div class="card-body p-4">
+                            <h2 class="card-title text-center mb-4">Enter a website URL</h2>
+                            <form id="urlForm" class="url-form">
+                                <div class="input-group mb-3">
+                                    <input type="url" id="urlInput" class="form-control url-input" 
+                                           placeholder="https://example.com" required>
+                                    <button id="crawlButton" type="submit" class="btn btn-primary submit-btn">
+                                        <i class="fas fa-spider me-2"></i>Crawl Website
+                                    </button>
+                                </div>
+                                <small class="form-text text-muted">
+                                    Enter any website URL. We'll crawl all pages within the same domain.
+                                </small>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Status section (hidden initially) -->
+        <section id="statusSection" class="progress-section hidden">
+            <div class="row mb-4">
+                <div class="col-md-6 mb-4">
+                    <div class="illustration-container">
+                        <img src="https://images.unsplash.com/photo-1597774424920-b3207c701b4d" alt="Download progress visualization" class="img-fluid">
+                    </div>
+                </div>
+                <div class="col-md-6 mb-4">
+                    <div class="illustration-container">
+                        <img src="https://images.unsplash.com/photo-1666088542120-00b2550d1e0f" alt="Download progress visualization" class="img-fluid">
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm crawler-status">
+                <div class="card-body">
+                    <h3 class="card-title">Crawling in progress</h3>
+                    <p class="card-text text-muted">Please wait while we crawl and process the website...</p>
+                    
+                    <div class="progress mb-4">
+                        <div id="crawlingProgress" class="progress-bar progress-bar-striped progress-bar-animated" 
+                             role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%"></div>
+                    </div>
+                    
+                    <div class="status-message p-3 bg-dark rounded mb-4" id="statusMessage">
+                        <!-- Status messages will be inserted here -->
+                    </div>
+                    
+                    <div class="stats-container">
+                        <h4>Resource Statistics</h4>
+                        <div class="row text-center">
+                            <div class="col-md-4 col-6 mb-3">
+                                <div class="stats-card p-3 rounded">
+                                    <div class="resource-icon">
+                                        <i class="fas fa-file-code"></i>
+                                    </div>
+                                    <div class="resource-count" id="statsHtml">0</div>
+                                    <div class="resource-label">HTML Pages</div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 col-6 mb-3">
+                                <div class="stats-card p-3 rounded">
+                                    <div class="resource-icon">
+                                        <i class="fas fa-palette"></i>
+                                    </div>
+                                    <div class="resource-count" id="statsCss">0</div>
+                                    <div class="resource-label">CSS Files</div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 col-6 mb-3">
+                                <div class="stats-card p-3 rounded">
+                                    <div class="resource-icon">
+                                        <i class="fas fa-js"></i>
+                                    </div>
+                                    <div class="resource-count" id="statsJs">0</div>
+                                    <div class="resource-label">JavaScript Files</div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 col-6 mb-3">
+                                <div class="stats-card p-3 rounded">
+                                    <div class="resource-icon">
+                                        <i class="fas fa-image"></i>
+                                    </div>
+                                    <div class="resource-count" id="statsImages">0</div>
+                                    <div class="resource-label">Images</div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 col-6 mb-3">
+                                <div class="stats-card p-3 rounded">
+                                    <div class="resource-icon">
+                                        <i class="fas fa-font"></i>
+                                    </div>
+                                    <div class="resource-count" id="statsFonts">0</div>
+                                    <div class="resource-label">Fonts</div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 col-6 mb-3">
+                                <div class="stats-card p-3 rounded">
+                                    <div class="resource-icon">
+                                        <i class="fas fa-file-alt"></i>
+                                    </div>
+                                    <div class="resource-count" id="statsOther">0</div>
+                                    <div class="resource-label">Other Files</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Download section (hidden initially) -->
+            <div id="downloadSection" class="text-center mt-4 hidden">
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle me-2"></i>
+                    Crawling completed! Your website has been successfully crawled and packaged.
+                </div>
+                <div class="mt-4">
+                    <button id="downloadButton" class="btn btn-success btn-lg">
+                        <i class="fas fa-download me-2"></i>Download ZIP File
+                    </button>
+                    <button id="previewButton" class="btn btn-outline-info btn-lg ms-2 hidden">
+                        <i class="fas fa-eye me-2"></i>Show Preview
+                    </button>
+                </div>
+                <div class="mt-3">
+                    <p class="text-muted">The ZIP file is ready for direct upload to Netlify Drop.</p>
+                </div>
+            </div>
+            
+            <!-- Preview section (hidden initially) -->
+            <div id="previewSection" class="mt-4 hidden">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h3 class="card-title">Content Preview</h3>
+                        <div id="previewContent" class="mt-3">
+                            <!-- Preview content will be inserted here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-dark text-center text-white-50 py-4">
+        <div class="container">
+            <p>Website to ZIP - Crawl any website and download it for Netlify deployment</p>
+            <p class="small">This tool respects robots.txt and implements request throttling to avoid overloading target servers.</p>
+        </div>
+    </footer>
+
+    <!-- Socket.IO JS -->
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    
+    <!-- Bootstrap JS Bundle (includes Popper) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JavaScript -->
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
