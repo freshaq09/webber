@@ -29,8 +29,12 @@ logger = logging.getLogger(__name__)
 # Create Flask app
 app = Flask(__name__)
 app.secret_key = os.environ.get("SESSION_SECRET", "default_secret_key")
-app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", "sqlite:///site.db")
+app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+    "pool_pre_ping": True,
+    "pool_recycle": 300,
+}
 
 # Initialize extensions
 db.init_app(app)
@@ -544,22 +548,38 @@ def register():
             flash('All fields are required', 'danger')
             return render_template('register.html')
         
-        # Check if user already exists
-        if User.query.filter_by(email=email).first():
-            flash('Email already registered', 'danger')
+        try:
+            # Check if user already exists
+            existing_user = User.query.filter_by(email=email).first()
+            if existing_user:
+                flash('Email already registered', 'danger')
+                return render_template('register.html')
+            
+            # Create new user
+            user = User(email=email, name=name)
+            user.set_password(password)
+            
+            # Add to database
+            db.session.add(user)
+            db.session.commit()
+            
+            # Generate initial API key
+            api_key = ApiKey(
+                user_id=user.id,
+                key=secrets.token_urlsafe(32),
+                name="Default Key"
+            )
+            db.session.add(api_key)
+            db.session.commit()
+            
+            flash('Registration successful! Please log in.', 'success')
+            return redirect(url_for('login'))
+            
+        except Exception as e:
+            db.session.rollback()
+            logger.error(f"Registration error: {str(e)}")
+            flash(f'Error during registration. Please try again later.', 'danger')
             return render_template('register.html')
-        
-        # Create new user
-        user = User(email=email, name=name)
-        user.set_password(password)
-        db.session.add(user)
-        db.session.commit()
-        
-        # Generate initial API key
-        user.generate_api_key("Default Key")
-        
-        flash('Registration successful! Please log in.', 'success')
-        return redirect(url_for('login'))
     
     return render_template('register.html')
 
@@ -626,6 +646,12 @@ def delete_api_key(key_id):
     
     flash(f'API key "{key_name}" deleted successfully', 'success')
     return redirect(url_for('dashboard'))
+
+# API documentation
+@app.route('/api/docs')
+def api_docs():
+    """API documentation page"""
+    return render_template('api_docs.html')
 
 # API endpoints
 @app.route('/api/v1/fast_wget', methods=['POST'])
