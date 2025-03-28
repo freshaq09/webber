@@ -85,7 +85,9 @@ def crawl_with_wget_sync(url):
             
         # Create ZIP file
         timestamp = int(time.time())
-        zip_filename = f"{domain.replace('.', '_')}_{timestamp}.zip"
+        # Ensure domain is not empty, otherwise use 'website' as fallback
+        safe_domain = domain.replace('.', '_') if domain else "website"
+        zip_filename = f"{safe_domain}_{timestamp}.zip"
         zip_path = str(Path(".") / zip_filename)  # Save to current directory for easy access
         
         logger.info(f"Creating ZIP file at {zip_path}")
@@ -111,6 +113,10 @@ def crawl_with_wget_sync(url):
         
     except Exception as e:
         logger.error(f"Error in wget crawling: {str(e)}")
+        # Log the full traceback for debugging
+        import traceback
+        logger.error(f"Traceback: {traceback.format_exc()}")
+        # Return None to indicate failure
         return None
 
 # Command line interface for testing

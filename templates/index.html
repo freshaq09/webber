@@ -358,6 +358,15 @@
                     urlInput.value = processedUrl;
                 }
                 
+                // More robust URL validation
+                try {
+                    new URL(processedUrl);
+                } catch (e) {
+                    showError('Please enter a valid website URL');
+                    urlInput.focus();
+                    return;
+                }
+                
                 // Show loading state with animation
                 fastWgetButton.disabled = true;
                 fastWgetButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
@@ -383,7 +392,7 @@
                 form.appendChild(urlField);
                 document.body.appendChild(form);
                 
-                // Set a timeout to reset the button state
+                // Set a timeout to reset the button state and show fallback message if download didn't start
                 setTimeout(() => {
                     fastWgetButton.disabled = false;
                     fastWgetButton.innerHTML = '<i class="fas fa-bolt me-2"></i>Instant Download';
@@ -395,9 +404,9 @@
                         downloadStatus.style.opacity = '1';
                     }, 500);
                     
-                    // Show success message
-                    showSuccess('Download completed!');
-                }, 5000);
+                    // Show a message that combines success with fallback info
+                    showAlert('If the download didn\'t start automatically, please check if the URL is valid or try a different website.', 'info');
+                }, 8000);
                 
                 // Submit the form to trigger download
                 form.submit();
@@ -418,8 +427,20 @@
             
             // Generic alert function
             function showAlert(message, type) {
-                const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
-                const icon = type === 'success' ? '<i class="fas fa-check-circle me-2"></i>' : '<i class="fas fa-exclamation-circle me-2"></i>';
+                let alertClass, icon;
+                
+                // Determine the appropriate class and icon based on the type
+                if (type === 'success') {
+                    alertClass = 'alert-success';
+                    icon = '<i class="fas fa-check-circle me-2"></i>';
+                } else if (type === 'info') {
+                    alertClass = 'alert-info';
+                    icon = '<i class="fas fa-info-circle me-2"></i>';
+                } else {
+                    // Default to danger for errors
+                    alertClass = 'alert-danger';
+                    icon = '<i class="fas fa-exclamation-circle me-2"></i>';
+                }
                 
                 const alertElement = document.createElement('div');
                 alertElement.className = `alert ${alertClass} alert-dismissible fade show mt-3`;

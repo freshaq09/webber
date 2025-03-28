@@ -325,6 +325,20 @@ function handleFastWget() {
         return;
     }
     
+    // Basic URL validation
+    let processedUrl = url;
+    if (!processedUrl.startsWith('http://') && !processedUrl.startsWith('https://')) {
+        processedUrl = 'http://' + processedUrl;
+    }
+    
+    try {
+        // Validate URL
+        new URL(processedUrl);
+    } catch (e) {
+        showError('Please enter a valid URL');
+        return;
+    }
+    
     // Show loading state
     fastWgetButton.disabled = true;
     fastWgetButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Downloading...';
@@ -338,16 +352,19 @@ function handleFastWget() {
     const urlField = document.createElement('input');
     urlField.type = 'hidden';
     urlField.name = 'url';
-    urlField.value = url;
+    urlField.value = processedUrl;
     
     // Add to form and submit
     form.appendChild(urlField);
     document.body.appendChild(form);
     
-    // Set a timeout to reset the button state
+    // Set a timeout to reset the button state and show a message if download doesn't start
     setTimeout(() => {
         fastWgetButton.disabled = false;
         fastWgetButton.innerHTML = '<i class="fas fa-bolt me-2"></i>Instant Download with wget';
+        
+        // Show a message if it's taking too long
+        showError('If the download did not start, there might be an issue with the website URL or the server. Please try again.');
     }, 10000);
     
     // Submit the form to trigger download

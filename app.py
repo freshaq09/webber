@@ -86,16 +86,29 @@ def fast_wget():
         logger.info(f"Starting fast wget download for {url}")
         
         # Call the wget function (this will block until download is complete)
+        logger.debug(f"Calling crawl_with_wget_sync({url})")
         zip_path = crawl_with_wget_sync(url)
+        logger.debug(f"crawl_with_wget_sync returned zip_path: {zip_path}")
         
-        if not zip_path or not os.path.exists(zip_path):
-            return jsonify({"error": "Failed to download website with wget"}), 500
+        if not zip_path:
+            logger.error("crawl_with_wget_sync returned None")
+            return jsonify({"error": "Failed to download website with wget. The crawling process failed."}), 500
+            
+        if not os.path.exists(zip_path):
+            logger.error(f"Generated ZIP file does not exist at path: {zip_path}")
+            return jsonify({"error": f"Failed to download website with wget. ZIP file not found at {zip_path}."}), 500
+        
+        # Log success
+        logger.info(f"Successfully downloaded website. ZIP file at: {zip_path}")
         
         # Return the ZIP file directly
-        return send_file(zip_path, as_attachment=True)
+        return send_file(zip_path, as_attachment=True, download_name=os.path.basename(zip_path))
     
     except Exception as e:
+        # Log the error with full traceback
+        import traceback
         logger.error(f"Fast wget error: {e}")
+        logger.error(f"Traceback: {traceback.format_exc()}")
         return jsonify({"error": f"Error downloading with wget: {str(e)}"}), 500
 
 @app.route('/scraper')
