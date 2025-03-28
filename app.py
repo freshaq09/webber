@@ -119,6 +119,9 @@ def crawl():
     if not url:
         return jsonify({"error": "No URL provided"}), 400
     
+    # Check if wget mode is selected
+    use_wget = request.form.get('use_wget') == 'true'
+    
     # Validate URL
     if not re.match(r'^https?://', url):
         url = 'http://' + url
@@ -135,19 +138,115 @@ def crawl():
     task_id = str(uuid.uuid4())
     session['task_id'] = task_id
     
-    # Initialize crawler with faster throttle
-    crawler = WebCrawler(url, task_id, socketio, throttle_delay=0.01)
-    active_tasks[task_id] = {
-        "crawler": crawler,
-        "status": "starting",
-        "start_time": time.time(),
-        "url": url
-    }
-    
-    # Start crawling in a separate thread
-    thread = threading.Thread(target=crawler.start_crawling)
-    thread.daemon = True
-    thread.start()
+    if use_wget:
+        # Create a thread to run wget crawling
+        def wget_crawler():
+            try:
+                # Send initial status
+                logger.info(f"Starting wget crawling for {url}")
+                socketio.emit('status_update', {
+                    'task_id': task_id,
+                    'message': f"Starting wget download for {url}",
+                    'progress': 10,
+                    'stats': {'resources': {'html': 0, 'css': 0, 'js': 0, 'images': 0, 'fonts': 0, 'other': 0}}
+                })
+                
+                # Prepare task directory
+                task_dir = temp_dir / task_id
+                
+                # Use our simplified_wget module
+                from simplified_wget import crawl_with_wget
+                
+                # Send status update
+                socketio.emit('status_update', {
+                    'task_id': task_id,
+                    'message': f"Downloading website with wget...",
+                    'progress': 30,
+                    'stats': {'resources': {'html': 0, 'css': 0, 'js': 0, 'images': 0, 'fonts': 0, 'other': 0}}
+                })
+                
+                # Start crawling
+                result = crawl_with_wget(url, task_id, task_dir)
+                
+                if result["status"] == "completed":
+                    # Store task completion info
+                    active_tasks[task_id] = {
+                        "status": "completed",
+                        "start_time": time.time(),
+                        "url": url,
+                        "zip_path": result["zip_path"],
+                        "files_downloaded": result["files_downloaded"],
+                        "resources": result["resources"],
+                        "wget_mode": True
+                    }
+                    
+                    # Emit completion status
+                    socketio.emit('status_update', {
+                        'task_id': task_id,
+                        'message': f"Crawling completed! Downloaded {result['files_downloaded']} files.",
+                        'progress': 100,
+                        'stats': {'resources': result["resources"]}
+                    })
+                    
+                    logger.info(f"Wget crawling completed for {url}")
+                else:
+                    # Handle error
+                    active_tasks[task_id] = {
+                        "status": "failed",
+                        "start_time": time.time(),
+                        "url": url,
+                        "error": result.get("error", "Unknown error"),
+                        "wget_mode": True
+                    }
+                    
+                    socketio.emit('status_update', {
+                        'task_id': task_id,
+                        'message': f"Error: {result.get('error', 'Unknown error')}",
+                        'progress': -1
+                    })
+                    
+                    logger.error(f"Wget crawling failed for {url}: {result.get('error', 'Unknown error')}")
+                
+            except Exception as e:
+                logger.error(f"Error in wget crawling: {str(e)}")
+                active_tasks[task_id] = {
+                    "status": "failed",
+                    "start_time": time.time(),
+                    "url": url,
+                    "error": str(e),
+                    "wget_mode": True
+                }
+                socketio.emit('status_update', {
+                    'task_id': task_id,
+                    'message': f"Error: {str(e)}",
+                    'progress': -1
+                })
+        
+        # Start wget crawling in a thread
+        active_tasks[task_id] = {
+            "status": "starting",
+            "start_time": time.time(),
+            "url": url,
+            "wget_mode": True
+        }
+        thread = threading.Thread(target=wget_crawler)
+        thread.daemon = True
+        thread.start()
+    else:
+        # Initialize crawler with faster throttle using the original Python method
+        crawler = WebCrawler(url, task_id, socketio, throttle_delay=0.01)
+        active_tasks[task_id] = {
+            "crawler": crawler,
+            "status": "starting",
+            "start_time": time.time(),
+            "url": url,
+            "wget_mode": False
+        }
+        
+        # Start crawling in a separate thread
+        thread = threading.Thread(target=crawler.start_crawling)
+        thread.daemon = True
+        thread.start()
     
     return jsonify({"task_id": task_id, "status": "started"})
 
@@ -160,16 +259,35 @@ def status(task_id):
     task = active_tasks[task_id]
     
     # If task has been running for over 30 seconds, mark it as completed
-    # so the download can be attempted
-    if time.time() - task["start_time"] > 30 and task["status"] != "failed":
+    # so the download can be attempted (for non-wget tasks only)
+    if not task.get("wget_mode", False) and time.time() - task["start_time"] > 30 and task["status"] != "failed":
         task["status"] = "completed"
+    
+    # Handle wget vs non-wget tasks differently
+    if task.get("wget_mode", False):
+        # For wget mode tasks
+        stats = {
+            "processed_urls": task.get("files_downloaded", 0),
+            "total_urls": task.get("files_downloaded", 0) + 10,  # Add buffer for incomplete downloads
+            "resources": task.get("resources", {
+                "html": 0, "css": 0, "js": 0, "images": 0, "fonts": 0, "other": 0
+            })
+        }
         
-    return jsonify({
-        "status": task["status"],
-        "url": task["url"],
-        "duration": time.time() - task["start_time"],
-        "crawled_urls": task["crawler"].get_stats()
-    })
+        return jsonify({
+            "status": task["status"],
+            "url": task["url"],
+            "duration": time.time() - task["start_time"],
+            "crawled_urls": stats
+        })
+    else:
+        # For original Python crawler tasks
+        return jsonify({
+            "status": task["status"],
+            "url": task["url"],
+            "duration": time.time() - task["start_time"],
+            "crawled_urls": task["crawler"].get_stats()
+        })
 
 @app.route('/download/<task_id>')
 def download(task_id):
@@ -182,12 +300,23 @@ def download(task_id):
         return jsonify({"error": "Task not yet completed"}), 400
     
     try:
-        zip_path = task["crawler"].get_zip_path()
-        if not zip_path or not os.path.exists(zip_path):
-            return jsonify({"error": "ZIP file not found"}), 404
-        
-        filename = os.path.basename(zip_path)
-        return send_file(zip_path, download_name=filename, as_attachment=True)
+        # Handle wget vs non-wget tasks differently
+        if task.get("wget_mode", False):
+            # For wget mode tasks
+            zip_path = task.get("zip_path")
+            if not zip_path or not os.path.exists(zip_path):
+                return jsonify({"error": "ZIP file not found"}), 404
+            
+            filename = os.path.basename(zip_path)
+            return send_file(zip_path, download_name=filename, as_attachment=True)
+        else:
+            # For original Python crawler tasks
+            zip_path = task["crawler"].get_zip_path()
+            if not zip_path or not os.path.exists(zip_path):
+                return jsonify({"error": "ZIP file not found"}), 404
+            
+            filename = os.path.basename(zip_path)
+            return send_file(zip_path, download_name=filename, as_attachment=True)
     except Exception as e:
         logger.error(f"Download error: {e}")
         return jsonify({"error": f"Error downloading ZIP: {str(e)}"}), 500
@@ -203,8 +332,59 @@ def preview(task_id):
         return jsonify({"error": "No content available for preview"}), 400
     
     try:
-        preview_data = task["crawler"].get_preview_data()
-        return jsonify(preview_data)
+        # Handle wget vs non-wget tasks differently
+        if task.get("wget_mode", False):
+            # For wget mode tasks, create a basic preview
+            task_dir = temp_dir / task_id
+            
+            # Find HTML files for preview
+            pages = []
+            total_files = 0
+            
+            # Handle different directory structures
+            domain_dir = task_dir / urlparse(task["url"]).netloc
+            search_dir = domain_dir if domain_dir.exists() else task_dir
+            
+            # Walk through the directory and count files
+            for root, _, files in os.walk(search_dir):
+                total_files += len(files)
+                
+                # Only include HTML files in the preview
+                for file in files:
+                    if file.endswith('.html') or file.endswith('.htm'):
+                        file_path = os.path.join(root, file)
+                        rel_path = os.path.relpath(file_path, search_dir)
+                        
+                        # Try to extract title
+                        title = rel_path
+                        try:
+                            with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+                                content = f.read()
+                                soup = BeautifulSoup(content, 'html.parser')
+                                title_tag = soup.find('title')
+                                if title_tag and title_tag.text:
+                                    title = title_tag.text.strip()
+                        except Exception:
+                            pass  # Just use the filename if we can't extract title
+                        
+                        pages.append({
+                            'title': title,
+                            'path': rel_path
+                        })
+                        
+                        # Limit to 20 pages for preview
+                        if len(pages) >= 20:
+                            break
+            
+            preview_data = {
+                'pages': pages,
+                'total_files': total_files
+            }
+            return jsonify(preview_data)
+        else:
+            # For original Python crawler tasks
+            preview_data = task["crawler"].get_preview_data()
+            return jsonify(preview_data)
     except Exception as e:
         logger.error(f"Preview error: {e}")
         return jsonify({"error": f"Error generating preview: {str(e)}"}), 500
@@ -218,7 +398,16 @@ def cleanup(task_id):
     try:
         # Clean up task files
         task = active_tasks[task_id]
-        if "crawler" in task:
+        
+        # Different cleanup for wget vs non-wget tasks
+        if task.get("wget_mode", False):
+            # For wget mode tasks, just remove the task directory
+            task_dir = temp_dir / task_id
+            if task_dir.exists():
+                import shutil
+                shutil.rmtree(task_dir, ignore_errors=True)
+        elif "crawler" in task:
+            # For original Python crawler tasks
             task["crawler"].cleanup()
         
         # Remove from active tasks

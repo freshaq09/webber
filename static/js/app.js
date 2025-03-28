@@ -9,6 +9,7 @@ let socket = null;
 const urlForm = document.getElementById('urlForm');
 const urlInput = document.getElementById('urlInput');
 const crawlButton = document.getElementById('crawlButton');
+const useWgetMode = document.getElementById('useWgetMode');
 const statusSection = document.getElementById('statusSection');
 const progressBar = document.getElementById('crawlingProgress');
 const statusMessage = document.getElementById('statusMessage');
@@ -90,12 +91,17 @@ async function handleFormSubmit(event) {
     crawlButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Starting...';
     
     try {
+        const formData = new FormData();
+        formData.append('url', url);
+        
+        // Check if wget mode is selected
+        if (useWgetMode.checked) {
+            formData.append('use_wget', 'true');
+        }
+        
         const response = await fetch('/crawl', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: `url=${encodeURIComponent(url)}`
+            body: formData
         });
         
         const data = await response.json();
