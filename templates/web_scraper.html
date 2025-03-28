@@ -1,91 +1,76 @@
-<!DOCTYPE html>
-<html lang="en" data-bs-theme="light">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Website Text Extractor</title>
+{% extends "base.html" %}
+
+{% block title %}Website Text Extractor{% endblock %}
+
+{% block styles %}
+<style>
+    .hero-banner {
+        background: linear-gradient(135deg, #f1fffa 0%, #e1f8f0 100%);
+        padding: 4rem 0;
+        border-radius: 16px;
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+    }
     
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    .hero-banner::before {
+        content: '';
+        position: absolute;
+        top: -10%;
+        right: -10%;
+        width: 60%;
+        height: 70%;
+        background: radial-gradient(circle, rgba(46, 204, 113, 0.2) 0%, rgba(46, 204, 113, 0.1) 70%, rgba(46, 204, 113, 0) 100%);
+        border-radius: 50%;
+    }
     
-    <!-- Font Awesome for icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    .text-content {
+        white-space: pre-wrap;
+        max-height: 500px;
+        overflow-y: auto;
+        background-color: rgba(46, 204, 113, 0.03);
+        padding: 1.5rem;
+        border-radius: 12px;
+        font-family: 'Roboto Mono', monospace;
+        font-size: 0.9rem;
+        color: var(--text-dark);
+        border: 1px solid rgba(46, 204, 113, 0.1);
+        line-height: 1.6;
+    }
     
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    .feature-box {
+        border-radius: 12px;
+        padding: 1.5rem;
+        background-color: rgba(46, 204, 113, 0.03);
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+    }
     
-    <!-- Custom styles -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    .feature-box:hover {
+        background-color: rgba(46, 204, 113, 0.07);
+    }
     
-    <style>
-        .hero-banner {
-            background: linear-gradient(135deg, #f1fffa 0%, #e1f8f0 100%);
-            padding: 4rem 0;
-            border-radius: 16px;
-            margin-bottom: 2rem;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .hero-banner::before {
-            content: '';
-            position: absolute;
-            top: -10%;
-            right: -10%;
-            width: 60%;
-            height: 70%;
-            background: radial-gradient(circle, rgba(46, 204, 113, 0.2) 0%, rgba(46, 204, 113, 0.1) 70%, rgba(46, 204, 113, 0) 100%);
-            border-radius: 50%;
-        }
-        
-        .text-content {
-            white-space: pre-wrap;
-            max-height: 500px;
-            overflow-y: auto;
-            background-color: rgba(46, 204, 113, 0.03);
-            padding: 1.5rem;
-            border-radius: 12px;
-            font-family: 'Roboto Mono', monospace;
-            font-size: 0.9rem;
-            color: var(--text-dark);
-            border: 1px solid rgba(46, 204, 113, 0.1);
-            line-height: 1.6;
-        }
-        
-        .feature-box {
-            border-radius: 12px;
-            padding: 1.5rem;
-            background-color: rgba(46, 204, 113, 0.03);
-            margin-bottom: 1rem;
-            transition: all 0.3s ease;
-        }
-        
-        .feature-box:hover {
-            background-color: rgba(46, 204, 113, 0.07);
-        }
-        
-        .error-message {
-            color: #e74c3c;
-        }
-        
-        .back-btn {
-            display: inline-flex;
-            align-items: center;
-            color: var(--text-muted);
-            text-decoration: none;
-            transition: all 0.3s ease;
-            margin-bottom: 1rem;
-        }
-        
-        .back-btn:hover {
-            color: var(--primary-green);
-            transform: translateX(-5px);
-        }
-    </style>
-</head>
-<body>
+    .error-message {
+        color: #e74c3c;
+    }
+    
+    .back-btn {
+        display: inline-flex;
+        align-items: center;
+        color: var(--text-muted);
+        text-decoration: none;
+        transition: all 0.3s ease;
+        margin-bottom: 1rem;
+    }
+    
+    .back-btn:hover {
+        color: var(--primary-green);
+        transform: translateX(-5px);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
     <div class="container py-5">
         <a href="/" class="back-btn">
             <i class="fas fa-arrow-left me-2"></i> Back to Website Downloader
@@ -235,7 +220,5 @@
         </div>
     </footer>
     
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+
+{% endblock %}

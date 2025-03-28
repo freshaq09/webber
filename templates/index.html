@@ -1,297 +1,264 @@
-<!DOCTYPE html>
-<html lang="en" data-bs-theme="light">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Website to ZIP - Instant Netlify-ready Downloads</title>
-    
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    
-    <!-- Font Awesome for icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
-    <!-- Custom styles -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    
-    <style>
-        :root {
-            --primary-green: #2ecc71;
-            --primary-green-light: #55d98d;
-            --primary-green-dark: #27ae60;
-            --accent-blue: #3498db;
-            --accent-teal: #1abc9c;
-            --light-gray: #f8f9fa;
-            --medium-gray: #e9ecef;
-            --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-            --text-dark: #2c3e50;
-            --text-muted: #7f8c8d;
-        }
-        
-        body {
-            font-family: 'Poppins', sans-serif;
-            color: var(--text-dark);
-            background-color: #ffffff;
-        }
-        
-        .hero-section {
-            padding: 6rem 0;
-            background: linear-gradient(135deg, #f1fffa 0%, #e1f8f0 100%);
-            position: relative;
-            overflow: hidden;
-            margin-bottom: 3rem;
-            border-bottom: 1px solid var(--medium-gray);
-        }
-        
-        .hero-section::before {
-            content: '';
-            position: absolute;
-            top: -10%;
-            right: -10%;
-            width: 60%;
-            height: 70%;
-            background: radial-gradient(circle, var(--primary-green-light) 0%, rgba(46, 204, 113, 0.2) 70%, rgba(46, 204, 113, 0) 100%);
-            opacity: 0.5;
-            border-radius: 50%;
-        }
-        
-        .hero-section h1 {
-            color: var(--text-dark);
-            font-weight: 700;
-            margin-bottom: 1rem;
-            position: relative;
-        }
-        
-        .hero-section .lead {
-            color: var(--text-muted);
-            font-weight: 300;
-            font-size: 1.25rem;
-            position: relative;
-        }
-        
-        .feature-icon {
-            width: 64px;
-            height: 64px;
-            border-radius: 16px;
-            background-color: rgba(46, 204, 113, 0.1);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 1.5rem;
-            color: var(--primary-green);
-            transition: all 0.3s ease;
-        }
-        
-        .download-card {
-            border: none;
-            border-radius: 16px;
-            box-shadow: var(--card-shadow);
-            background-color: #ffffff;
-            transition: all 0.3s ease;
-        }
-        
-        .download-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
-        }
-        
-        .card {
-            border: none;
-            border-radius: 16px;
-            box-shadow: var(--card-shadow);
-            overflow: hidden;
-        }
-        
-        .card-title {
-            color: var(--text-dark);
-            font-weight: 600;
-        }
-        
-        .site-footer {
-            margin-top: 4rem;
-            padding: 2rem 0;
-            background-color: var(--light-gray);
-            border-top: 1px solid var(--medium-gray);
-            color: var(--text-muted);
-        }
-        
-        .loading-indicator {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 1rem;
-            padding: 1.25rem;
-            border-radius: 12px;
-            background-color: rgba(46, 204, 113, 0.05);
-            margin-top: 1.5rem;
-            border: 1px solid rgba(46, 204, 113, 0.1);
-        }
-        
-        .form-control:focus {
-            border-color: var(--primary-green);
-            box-shadow: 0 0 0 0.25rem rgba(46, 204, 113, 0.25);
-        }
-        
-        .btn-primary {
-            background-color: var(--primary-green);
-            border-color: var(--primary-green);
-            font-weight: 500;
-            padding: 0.75rem 1.5rem;
-            transition: all 0.3s ease;
-        }
-        
-        .btn-primary:hover, .btn-primary:focus {
-            background-color: var(--primary-green-dark);
-            border-color: var(--primary-green-dark);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 15px rgba(46, 204, 113, 0.3);
-        }
-        
-        .btn-outline-secondary {
-            color: var(--text-muted);
-            border-color: var(--medium-gray);
-            transition: all 0.3s ease;
-        }
-        
-        .btn-outline-secondary:hover {
-            background-color: var(--light-gray);
-            color: var(--text-dark);
-            border-color: var(--medium-gray);
-        }
-        
-        .step-number {
-            font-weight: 700;
-            color: var(--primary-green);
-            font-size: 1.5rem;
-            margin-bottom: 0.5rem;
-        }
-    </style>
-</head>
-<body>
-    <header class="hero-section">
-        <div class="container text-center">
-            <div class="mb-4">
-                <i class="fas fa-cloud-download-alt fa-3x" style="color: var(--primary-green);"></i>
-            </div>
-            <h1 class="display-4">Website to ZIP</h1>
-            <p class="lead">Instant website downloads ready for Netlify</p>
-            <div class="mt-4">
-                <span class="badge rounded-pill bg-white text-dark px-3 py-2 shadow-sm me-2">
-                    <i class="fas fa-bolt" style="color: var(--primary-green);"></i> Fast
-                </span>
-                <span class="badge rounded-pill bg-white text-dark px-3 py-2 shadow-sm me-2">
-                    <i class="fas fa-check" style="color: var(--primary-green);"></i> Reliable
-                </span>
-                <span class="badge rounded-pill bg-white text-dark px-3 py-2 shadow-sm">
-                    <i class="fas fa-lock" style="color: var(--primary-green);"></i> Secure
-                </span>
-            </div>
-        </div>
-    </header>
+{% extends "base.html" %}
 
-    <main class="container">
-        <div class="row justify-content-center">
-            <div class="col-lg-8">
-                <div class="download-card card p-4 mb-5">
-                    <div class="card-body">
-                        <div class="text-center mb-4">
-                            <span class="badge bg-success bg-opacity-10 text-success px-3 py-2 fw-normal">Super Fast Downloads</span>
-                            <h2 class="card-title mt-3">Download any website instantly</h2>
-                            <p class="text-muted">Our tool makes complete website downloads simple and incredibly fast</p>
-                        </div>
-                        
-                        <form id="downloadForm" class="mb-3">
-                            <div class="mb-4">
-                                <label for="urlInput" class="form-label fw-medium">Website URL</label>
-                                <div class="input-group input-group-lg">
-                                    <span class="input-group-text" style="background-color: rgba(46, 204, 113, 0.1); border-color: rgba(46, 204, 113, 0.2);">
-                                        <i class="fas fa-globe" style="color: var(--primary-green);"></i>
-                                    </span>
-                                    <input type="url" id="urlInput" class="form-control border-start-0" 
-                                          placeholder="https://example.com" required style="border-color: rgba(46, 204, 113, 0.2);">
-                                </div>
-                                <small class="form-text text-muted">Enter any website URL to download all pages within the same domain</small>
-                            </div>
-                            
-                            <button id="fastWgetButton" type="button" class="btn btn-primary btn-lg w-100 rounded-pill">
-                                <i class="fas fa-bolt me-2"></i>Instant Download
-                            </button>
-                        </form>
-                        
-                        <div id="downloadStatus" class="d-none loading-indicator">
-                            <div class="spinner-border" style="color: var(--primary-green);" role="status">
-                                <span class="visually-hidden">Loading...</span>
-                            </div>
-                            <div>
-                                <h5 class="mb-1">Downloading website...</h5>
-                                <p class="text-muted mb-0">Your download will begin automatically in a moment</p>
-                            </div>
-                        </div>
-                    </div>
+{% block title %}Website to ZIP - Instant Netlify-ready Downloads{% endblock %}
+
+{% block styles %}
+<style>
+    :root {
+        --primary-green: #2ecc71;
+        --primary-green-light: #55d98d;
+        --primary-green-dark: #27ae60;
+        --accent-blue: #3498db;
+        --accent-teal: #1abc9c;
+        --light-gray: #f8f9fa;
+        --medium-gray: #e9ecef;
+    }
+    
+    body {
+        font-family: 'Poppins', sans-serif;
+        background-color: var(--light-gray);
+    }
+    
+    .hero-section {
+        background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-teal) 100%);
+        color: white;
+        padding: 80px 0;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .hero-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='rgba(255,255,255,.1)' fill-rule='evenodd'/%3E%3C/svg%3E");
+        opacity: 0.3;
+    }
+    
+    .hero-title {
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        font-size: 2.5rem;
+    }
+    
+    .hero-subtitle {
+        font-weight: 300;
+        margin-bottom: 2rem;
+        font-size: 1.25rem;
+        opacity: 0.9;
+    }
+    
+    .btn-primary {
+        background-color: var(--primary-green);
+        border-color: var(--primary-green);
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .btn-primary:hover, .btn-primary:focus {
+        background-color: var(--primary-green-dark);
+        border-color: var(--primary-green-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+    }
+    
+    .feature-section {
+        padding: 60px 0;
+    }
+    
+    .feature-card {
+        background-color: white;
+        border-radius: 10px;
+        padding: 30px;
+        height: 100%;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+    }
+    
+    .feature-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    }
+    
+    .feature-icon {
+        font-size: 2.5rem;
+        color: var(--primary-green);
+        margin-bottom: 20px;
+    }
+    
+    .feature-title {
+        font-weight: 600;
+        margin-bottom: 15px;
+        color: #333;
+    }
+    
+    .feature-text {
+        color: #666;
+        font-size: 0.95rem;
+    }
+    
+    .form-control {
+        box-shadow: none;
+        border-radius: 8px;
+        padding: 12px 15px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+    
+    .form-control:focus {
+        border-color: var(--primary-green);
+        box-shadow: 0 0 0 0.2rem rgba(46, 204, 113, 0.25);
+    }
+    
+    .animated-icon {
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0% {
+            transform: scale(1);
+        }
+        50% {
+            transform: scale(1.05);
+        }
+        100% {
+            transform: scale(1);
+        }
+    }
+    
+    .download-status {
+        background-color: rgba(255, 255, 255, 0.95);
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .btn-primary:disabled {
+        background-color: var(--primary-green);
+        border-color: var(--primary-green);
+        opacity: 0.7;
+    }
+    
+    footer {
+        background-color: white;
+        padding: 30px 0;
+        box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.05);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+    <div class="hero-section">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-7">
+                    <h1 class="hero-title">Convert Any Website to a Netlify-Ready ZIP</h1>
+                    <p class="hero-subtitle">Download entire websites instantly with our optimized tools. Perfect for Netlify Drop deployment with just one click.</p>
                 </div>
-                
-                <div class="card p-4 mb-4">
-                    <div class="card-body">
-                        <div class="text-center mb-4">
-                            <span class="badge bg-light text-dark px-3 py-2 fw-normal border">Simple Process</span>
-                            <h3 class="card-title mt-3">How it works</h3>
-                            <p class="text-muted">Three quick steps to get your website ready for deployment</p>
-                        </div>
-                        
-                        <div class="row g-4">
-                            <div class="col-md-4">
-                                <div class="text-center h-100 p-3 rounded-4" style="background-color: rgba(46, 204, 113, 0.03); transition: all 0.3s ease;" onmouseover="this.style.backgroundColor='rgba(46, 204, 113, 0.07)'" onmouseout="this.style.backgroundColor='rgba(46, 204, 113, 0.03)'">
-                                    <div class="feature-icon">
-                                        <i class="fas fa-paste fa-lg" style="color: var(--primary-green);"></i>
-                                    </div>
-                                    <div class="step-number">1</div>
-                                    <h5 class="fw-semibold">Paste URL</h5>
-                                    <p class="text-muted small">Enter any website address you want to download</p>
+                <div class="col-lg-5">
+                    <div class="card border-0 shadow-lg">
+                        <div class="card-body p-4">
+                            <form id="downloadForm" class="mb-3">
+                                <div class="mb-3">
+                                    <label for="urlInput" class="form-label fw-bold">Website URL:</label>
+                                    <input type="url" class="form-control form-control-lg" id="urlInput" placeholder="https://example.com" required>
+                                    <div class="form-text small">Enter the full URL including https://</div>
                                 </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="text-center h-100 p-3 rounded-4" style="background-color: rgba(46, 204, 113, 0.03); transition: all 0.3s ease;" onmouseover="this.style.backgroundColor='rgba(46, 204, 113, 0.07)'" onmouseout="this.style.backgroundColor='rgba(46, 204, 113, 0.03)'">
-                                    <div class="feature-icon">
-                                        <i class="fas fa-bolt fa-lg" style="color: var(--primary-green);"></i>
+                                <button type="button" id="fastWgetButton" class="btn btn-primary btn-lg w-100 d-flex align-items-center justify-content-center">
+                                    <i class="fas fa-bolt me-2"></i>Instant Download
+                                </button>
+                            </form>
+                            <div id="downloadStatus" class="download-status d-none">
+                                <div class="d-flex align-items-center">
+                                    <div class="spinner-border text-primary me-3" role="status">
+                                        <span class="visually-hidden">Loading...</span>
                                     </div>
-                                    <div class="step-number">2</div>
-                                    <h5 class="fw-semibold">Instant Download</h5>
-                                    <p class="text-muted small">Our lightning-fast wget system packages the entire site</p>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="text-center h-100 p-3 rounded-4" style="background-color: rgba(46, 204, 113, 0.03); transition: all 0.3s ease;" onmouseover="this.style.backgroundColor='rgba(46, 204, 113, 0.07)'" onmouseout="this.style.backgroundColor='rgba(46, 204, 113, 0.03)'">
-                                    <div class="feature-icon">
-                                        <i class="fas fa-cloud-upload-alt fa-lg" style="color: var(--primary-green);"></i>
+                                    <div>
+                                        <h6 class="mb-1 fw-bold">Processing website...</h6>
+                                        <p class="mb-0 small">Creating Netlify-ready ZIP file. Please wait...</p>
                                     </div>
-                                    <div class="step-number">3</div>
-                                    <h5 class="fw-semibold">Deploy to Netlify</h5>
-                                    <p class="text-muted small">Upload the ZIP directly to Netlify Drop for instant hosting</p>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </div>
-                
-                <div class="card p-4 mb-4">
-                    <div class="card-body text-center">
-                        <h4 class="fw-semibold mb-3">Need to extract text content only?</h4>
-                        <p class="text-muted mb-4">Our Text Extractor Tool provides clean, readable content from any web page</p>
-                        <a href="/scraper" class="btn btn-outline-secondary rounded-pill px-4">
-                            <i class="fas fa-file-alt me-2"></i>Text Extractor Tool
-                        </a>
                     </div>
                 </div>
             </div>
         </div>
-    </main>
+    </div>
 
-    <footer class="site-footer">
+    <div class="feature-section">
+        <div class="container">
+            <div class="row mb-5 text-center">
+                <div class="col-lg-8 mx-auto">
+                    <h2 class="fw-bold mb-3">Why Use Our Website Downloader</h2>
+                    <p class="lead">A powerful tool designed specifically for Netlify deployments</p>
+                </div>
+            </div>
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-bolt"></i>
+                        </div>
+                        <h3 class="feature-title">Blazing Fast Downloads</h3>
+                        <p class="feature-text">Our optimized wget implementation completes most website downloads in less than a second, making it the fastest solution available.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-file-archive"></i>
+                        </div>
+                        <h3 class="feature-title">Netlify-Ready Format</h3>
+                        <p class="feature-text">The generated ZIP file is fully compatible with Netlify Drop, allowing for instant deployment with no configuration required.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-code"></i>
+                        </div>
+                        <h3 class="feature-title">Complete Website Capture</h3>
+                        <p class="feature-text">All assets including HTML, CSS, JavaScript, images and fonts are downloaded and properly structured for a perfect website copy.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="row g-4 mt-2">
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-key"></i>
+                        </div>
+                        <h3 class="feature-title">API Access Available</h3>
+                        <p class="feature-text">Need to automate website downloads? Create an account to get API access with simple integration for your applications.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-link"></i>
+                        </div>
+                        <h3 class="feature-title">Preserves Site Structure</h3>
+                        <p class="feature-text">Internal links and references are automatically updated to maintain the original website navigation and functionality.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-search-plus"></i>
+                        </div>
+                        <h3 class="feature-title">Text Content Extraction</h3>
+                        <p class="feature-text">Need just the text content? Our text extraction tool lets you pull clean, readable content from any webpage.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="mt-5">
         <div class="container">
             <div class="row">
                 <div class="col-md-6 text-center text-md-start">
@@ -299,204 +266,184 @@
                     <p class="mb-0 text-muted">Instant website downloads for Netlify deployment</p>
                 </div>
                 <div class="col-md-6 text-center text-md-end mt-3 mt-md-0">
-                    <div class="mb-2">
-                        {% if current_user.is_authenticated %}
-                            <a href="{{ url_for('dashboard') }}" class="btn btn-sm btn-outline-secondary me-2">
-                                <i class="fas fa-user me-1"></i>Dashboard
-                            </a>
-                            <a href="{{ url_for('logout') }}" class="btn btn-sm btn-outline-secondary">
-                                <i class="fas fa-sign-out-alt me-1"></i>Logout
-                            </a>
-                        {% else %}
-                            <a href="{{ url_for('login') }}" class="btn btn-sm btn-outline-secondary me-2">
-                                <i class="fas fa-sign-in-alt me-1"></i>Login
-                            </a>
-                            <a href="{{ url_for('register') }}" class="btn btn-sm btn-outline-secondary">
-                                <i class="fas fa-user-plus me-1"></i>Register
-                            </a>
-                        {% endif %}
-                    </div>
                     <span class="text-muted">Made with <i class="fas fa-heart" style="color: var(--primary-green);"></i> for web developers</span>
                 </div>
             </div>
         </div>
     </footer>
+{% endblock %}
 
-    <!-- Bootstrap JS Bundle (includes Popper) -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <!-- Custom JavaScript -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const urlInput = document.getElementById('urlInput');
-            const fastWgetButton = document.getElementById('fastWgetButton');
-            const downloadStatus = document.getElementById('downloadStatus');
-            
-            // Focus on the URL input field when the page loads
-            urlInput.focus();
-            
-            // Trigger the download when pressing Enter in the URL input
-            urlInput.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    startDownload();
-                }
-            });
-            
-            // Add hover effects to the main button
-            fastWgetButton.addEventListener('mouseover', function() {
-                this.style.transform = 'translateY(-3px)';
-            });
-            
-            fastWgetButton.addEventListener('mouseout', function() {
-                this.style.transform = '';
-            });
-            
-            // Click event for the download button
-            fastWgetButton.addEventListener('click', function() {
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const urlInput = document.getElementById('urlInput');
+        const fastWgetButton = document.getElementById('fastWgetButton');
+        const downloadStatus = document.getElementById('downloadStatus');
+        
+        // Focus on the URL input field when the page loads
+        urlInput.focus();
+        
+        // Trigger the download when pressing Enter in the URL input
+        urlInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
                 startDownload();
-            });
+            }
+        });
+        
+        // Add hover effects to the main button
+        fastWgetButton.addEventListener('mouseover', function() {
+            this.style.transform = 'translateY(-3px)';
+        });
+        
+        fastWgetButton.addEventListener('mouseout', function() {
+            this.style.transform = '';
+        });
+        
+        // Click event for the download button
+        fastWgetButton.addEventListener('click', function() {
+            startDownload();
+        });
+        
+        // Handle the download process
+        function startDownload() {
+            const url = urlInput.value.trim();
             
-            // Handle the download process
-            function startDownload() {
-                const url = urlInput.value.trim();
+            // Validate URL
+            if (!url) {
+                showError('Please enter a website URL');
+                urlInput.focus();
+                return;
+            }
+            
+            // Add http:// prefix if missing
+            let processedUrl = url;
+            if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                processedUrl = 'https://' + url;
+                urlInput.value = processedUrl;
+            }
+            
+            // More robust URL validation
+            try {
+                new URL(processedUrl);
+            } catch (e) {
+                showError('Please enter a valid website URL');
+                urlInput.focus();
+                return;
+            }
+            
+            // Show loading state with animation
+            fastWgetButton.disabled = true;
+            fastWgetButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
+            downloadStatus.classList.remove('d-none');
+            downloadStatus.style.opacity = '0';
+            setTimeout(() => {
+                downloadStatus.style.transition = 'opacity 0.5s ease';
+                downloadStatus.style.opacity = '1';
+            }, 10);
+            
+            // Create a form for direct download
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/fast_wget';
+            
+            // Create the URL input
+            const urlField = document.createElement('input');
+            urlField.type = 'hidden';
+            urlField.name = 'url';
+            urlField.value = processedUrl;
+            
+            // Add to form and submit
+            form.appendChild(urlField);
+            document.body.appendChild(form);
+            
+            // Set a timeout to reset the button state and show fallback message if download didn't start
+            setTimeout(() => {
+                fastWgetButton.disabled = false;
+                fastWgetButton.innerHTML = '<i class="fas fa-bolt me-2"></i>Instant Download';
                 
-                // Validate URL
-                if (!url) {
-                    showError('Please enter a website URL');
-                    urlInput.focus();
-                    return;
-                }
-                
-                // Add http:// prefix if missing
-                let processedUrl = url;
-                if (!url.startsWith('http://') && !url.startsWith('https://')) {
-                    processedUrl = 'https://' + url;
-                    urlInput.value = processedUrl;
-                }
-                
-                // More robust URL validation
-                try {
-                    new URL(processedUrl);
-                } catch (e) {
-                    showError('Please enter a valid website URL');
-                    urlInput.focus();
-                    return;
-                }
-                
-                // Show loading state with animation
-                fastWgetButton.disabled = true;
-                fastWgetButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
-                downloadStatus.classList.remove('d-none');
+                // Fade out the loading indicator
                 downloadStatus.style.opacity = '0';
                 setTimeout(() => {
-                    downloadStatus.style.transition = 'opacity 0.5s ease';
+                    downloadStatus.classList.add('d-none');
                     downloadStatus.style.opacity = '1';
-                }, 10);
+                }, 500);
                 
-                // Create a form for direct download
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = '/fast_wget';
-                
-                // Create the URL input
-                const urlField = document.createElement('input');
-                urlField.type = 'hidden';
-                urlField.name = 'url';
-                urlField.value = processedUrl;
-                
-                // Add to form and submit
-                form.appendChild(urlField);
-                document.body.appendChild(form);
-                
-                // Set a timeout to reset the button state and show fallback message if download didn't start
-                setTimeout(() => {
-                    fastWgetButton.disabled = false;
-                    fastWgetButton.innerHTML = '<i class="fas fa-bolt me-2"></i>Instant Download';
-                    
-                    // Fade out the loading indicator
-                    downloadStatus.style.opacity = '0';
-                    setTimeout(() => {
-                        downloadStatus.classList.add('d-none');
-                        downloadStatus.style.opacity = '1';
-                    }, 500);
-                    
-                    // Show a message that combines success with fallback info
-                    showAlert('If the download didn\'t start automatically, please check if the URL is valid or try a different website.', 'info');
-                }, 8000);
-                
-                // Submit the form to trigger download
-                form.submit();
-                
-                // Clean up
-                document.body.removeChild(form);
+                // Show a message that combines success with fallback info
+                showAlert('If the download didn\'t start automatically, please check if the URL is valid or try a different website.', 'info');
+            }, 8000);
+            
+            // Submit the form to trigger download
+            form.submit();
+            
+            // Clean up
+            document.body.removeChild(form);
+        }
+        
+        // Show error message
+        function showError(message) {
+            showAlert(message, 'danger');
+        }
+        
+        // Show success message
+        function showSuccess(message) {
+            showAlert(message, 'success');
+        }
+        
+        // Generic alert function
+        function showAlert(message, type) {
+            let alertClass, icon;
+            
+            // Determine the appropriate class and icon based on the type
+            if (type === 'success') {
+                alertClass = 'alert-success';
+                icon = '<i class="fas fa-check-circle me-2"></i>';
+            } else if (type === 'info') {
+                alertClass = 'alert-info';
+                icon = '<i class="fas fa-info-circle me-2"></i>';
+            } else {
+                // Default to danger for errors
+                alertClass = 'alert-danger';
+                icon = '<i class="fas fa-exclamation-circle me-2"></i>';
             }
             
-            // Show error message
-            function showError(message) {
-                showAlert(message, 'danger');
+            const alertElement = document.createElement('div');
+            alertElement.className = `alert ${alertClass} alert-dismissible fade show mt-3`;
+            alertElement.role = 'alert';
+            alertElement.style.borderRadius = '12px';
+            alertElement.style.boxShadow = '0 4px 12px rgba(0,0,0,0.05)';
+            alertElement.innerHTML = `
+                ${icon}${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            `;
+            
+            const downloadForm = document.getElementById('downloadForm');
+            downloadForm.insertAdjacentElement('afterend', alertElement);
+            
+            // Auto-dismiss after 5 seconds with fade effect
+            setTimeout(() => {
+                alertElement.classList.remove('show');
+                setTimeout(() => alertElement.remove(), 500);
+            }, 5000);
+        }
+        
+        // Add a placeholder animation to the input field
+        const placeholders = [
+            'https://example.com',
+            'https://myblog.com',
+            'https://portfolio-website.com',
+            'https://company-site.com'
+        ];
+        
+        let placeholderIndex = 0;
+        setInterval(() => {
+            placeholderIndex = (placeholderIndex + 1) % placeholders.length;
+            
+            // Only change placeholder if the input is not focused
+            if (document.activeElement !== urlInput) {
+                urlInput.setAttribute('placeholder', placeholders[placeholderIndex]);
             }
-            
-            // Show success message
-            function showSuccess(message) {
-                showAlert(message, 'success');
-            }
-            
-            // Generic alert function
-            function showAlert(message, type) {
-                let alertClass, icon;
-                
-                // Determine the appropriate class and icon based on the type
-                if (type === 'success') {
-                    alertClass = 'alert-success';
-                    icon = '<i class="fas fa-check-circle me-2"></i>';
-                } else if (type === 'info') {
-                    alertClass = 'alert-info';
-                    icon = '<i class="fas fa-info-circle me-2"></i>';
-                } else {
-                    // Default to danger for errors
-                    alertClass = 'alert-danger';
-                    icon = '<i class="fas fa-exclamation-circle me-2"></i>';
-                }
-                
-                const alertElement = document.createElement('div');
-                alertElement.className = `alert ${alertClass} alert-dismissible fade show mt-3`;
-                alertElement.role = 'alert';
-                alertElement.style.borderRadius = '12px';
-                alertElement.style.boxShadow = '0 4px 12px rgba(0,0,0,0.05)';
-                alertElement.innerHTML = `
-                    ${icon}${message}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                `;
-                
-                const downloadForm = document.getElementById('downloadForm');
-                downloadForm.insertAdjacentElement('afterend', alertElement);
-                
-                // Auto-dismiss after 5 seconds with fade effect
-                setTimeout(() => {
-                    alertElement.classList.remove('show');
-                    setTimeout(() => alertElement.remove(), 500);
-                }, 5000);
-            }
-            
-            // Add a placeholder animation to the input field
-            const placeholders = [
-                'https://example.com',
-                'https://myblog.com',
-                'https://portfolio-website.com',
-                'https://company-site.com'
-            ];
-            
-            let placeholderIndex = 0;
-            setInterval(() => {
-                placeholderIndex = (placeholderIndex + 1) % placeholders.length;
-                
-                // Only change placeholder if the input is not focused
-                if (document.activeElement !== urlInput) {
-                    urlInput.setAttribute('placeholder', placeholders[placeholderIndex]);
-                }
-            }, 3000);
-        });
-    </script>
-</body>
-</html>
+        }, 3000);
+    });
+</script>
+{% endblock %}
