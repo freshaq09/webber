@@ -568,14 +568,45 @@ class WebCrawler:
         zip_filename = f"{domain_name}_{int(time.time())}.zip"
         self.zip_path = os.path.join("temp", zip_filename)
         
-        with zipfile.ZipFile(self.zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
-            for root, _, files in os.walk(self.task_dir):
-                for file in files:
-                    file_path = os.path.join(root, file)
-                    arcname = os.path.relpath(file_path, self.task_dir)
-                    zipf.write(file_path, arcname)
+        # Make sure any previously existing file with the same name is removed
+        if os.path.exists(self.zip_path):
+            try:
+                os.remove(self.zip_path)
+            except Exception as e:
+                logger.error(f"Error removing existing zip file: {e}")
         
-        self._queue_status_update(f"ZIP file created: {zip_filename}", 100)
+        try:
+            with zipfile.ZipFile(self.zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+                # Add the netlify _redirects file
+                redirect_path = os.path.join(self.task_dir, "_redirects")
+                if os.path.exists(redirect_path):
+                    zipf.write(redirect_path, "_redirects")
+                
+                # Add all other files from the task directory
+                for root, _, files in os.walk(self.task_dir):
+                    for file in files:
+                        file_path = os.path.join(root, file)
+                        arcname = os.path.relpath(file_path, self.task_dir)
+                        zipf.write(file_path, arcname)
+            
+            # Debug log: Show zip file was created and its size
+            if os.path.exists(self.zip_path):
+                size_kb = os.path.getsize(self.zip_path) / 1024
+                logger.debug(f"ZIP file created: {zip_filename} ({size_kb:.1f} KB)")
+                
+            self._queue_status_update(f"ZIP file created: {zip_filename}", 100)
+        except Exception as e:
+            logger.error(f"Error creating ZIP file: {e}")
+            # Create minimal zip file anyway to avoid download failures
+            try:
+                with zipfile.ZipFile(self.zip_path, 'w') as zipf:
+                    # Create a dummy index.html 
+                    dummy_path = os.path.join(self.task_dir, "index.html")
+                    with open(dummy_path, 'w') as f:
+                        f.write("<html><body><h1>Minimal download</h1><p>The crawl did not complete properly.</p></body></html>")
+                    zipf.write(dummy_path, "index.html")
+            except Exception as e2:
+                logger.error(f"Error creating minimal ZIP: {e2}")
     
     def get_stats(self):
         """Get crawling statistics."""

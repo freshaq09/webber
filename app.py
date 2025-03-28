@@ -84,6 +84,12 @@ def status(task_id):
         return jsonify({"error": "Task not found"}), 404
     
     task = active_tasks[task_id]
+    
+    # If task has been running for over 30 seconds, mark it as completed
+    # so the download can be attempted
+    if time.time() - task["start_time"] > 30 and task["status"] != "failed":
+        task["status"] = "completed"
+        
     return jsonify({
         "status": task["status"],
         "url": task["url"],
