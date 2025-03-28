@@ -94,11 +94,10 @@ class WebCrawler:
             # Create necessary directories
             self._create_directory_structure()
             
-            # Process the queue - limit to 15 URLs to ensure timely completion
-            max_urls = 15
+            # Process the queue - unlimited depth crawling
             processed_urls = 0
             
-            while self.queue and not self._stop_event.is_set() and processed_urls < max_urls:
+            while self.queue and not self._stop_event.is_set():
                 # Get the next URL
                 current_url = self.queue.popleft()
                 
@@ -117,10 +116,12 @@ class WebCrawler:
                 self.stats["processed_urls"] = self.processed_count
                 processed_urls += 1
                 
-                # Update progress more frequently (every 2 URLs)
-                if processed_urls % 2 == 0:
-                    progress = min(int((processed_urls / max_urls) * 100), 99)
-                    self._queue_status_update(f"Processed {processed_urls} of {max_urls} URLs", progress)
+                # Update progress more frequently (every 5 URLs)
+                if processed_urls % 5 == 0:
+                    # Calculate a progress percentage based on ratio of processed to total known URLs
+                    total_known_urls = len(self.visited_urls) + len(self.queue)
+                    progress = min(int((len(self.visited_urls) / max(total_known_urls, 1)) * 100), 99)
+                    self._queue_status_update(f"Processed {processed_urls} URLs - Unlimited depth crawling", progress)
                 
                 # Throttle requests with shorter delay for faster completion
                 time.sleep(self.throttle_delay)
