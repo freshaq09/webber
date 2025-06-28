@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 # Create Flask app
 app = Flask(__name__)
 app.secret_key = os.environ.get("SESSION_SECRET", "default_secret_key")
-app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL")
+app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", "sqlite:///app.db")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
     "pool_pre_ping": True,
@@ -706,3 +706,6 @@ def api_fast_wget():
         logger.error(f"API fast wget error: {e}")
         logger.error(f"Traceback: {traceback.format_exc()}")
         return jsonify({"error": f"Error downloading with wget: {str(e)}"}), 500
+
+if __name__ == '__main__':
+    socketio.run(app, debug=True, host='0.0.0.0', port=5050)
