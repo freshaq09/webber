@@ -77,8 +77,19 @@ def crawl_with_wget_sync(url):
         logger.info(f"Starting wget crawl for {url} in {temp_dir}")
         
         # Build wget command for fast, complete website downloading
-        # Use full path to wget from Nix store
-        wget_cmd = '/nix/store/lxpqagx4z23qxxchpjz5vq23bhfgxgph-wget-1.24.5/bin/wget'
+        # Find wget in Nix store or use system wget
+        wget_cmd = 'wget'
+        try:
+            # Try to find wget in Nix store
+            import glob
+            nix_wget_paths = glob.glob('/nix/store/*/bin/wget')
+            if nix_wget_paths:
+                wget_cmd = nix_wget_paths[0]
+                logger.info(f"Using Nix wget: {wget_cmd}")
+            else:
+                logger.info("Using system wget")
+        except Exception:
+            logger.info("Using system wget")
         
         cmd = [
             wget_cmd,
