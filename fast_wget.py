@@ -26,6 +26,18 @@ def crawl_with_wget_sync(url):
         str: Path to the ZIP file or None if failed
     """
     try:
+        # First, check if wget is available
+        try:
+            wget_check = subprocess.run(['which', 'wget'], capture_output=True, text=True)
+            if wget_check.returncode != 0:
+                logger.error("wget is not available on this system")
+                logger.error(f"wget check output: {wget_check.stdout} {wget_check.stderr}")
+                return None
+            logger.info(f"wget found at: {wget_check.stdout.strip()}")
+        except Exception as e:
+            logger.error(f"Error checking wget availability: {e}")
+            return None
+        
         # Parse URL to get domain for ZIP file naming
         parsed_url = urllib.parse.urlparse(url)
         domain = parsed_url.netloc
@@ -47,6 +59,8 @@ def crawl_with_wget_sync(url):
             '--no-parent',            # Don't go to parent directory
             '--directory-prefix=' + str(temp_dir),  # Output directory
             '--no-verbose',           # Reduce output verbosity
+            '--timeout=30',           # Add timeout
+            '--tries=3',              # Retry failed downloads
             url
         ]
         
@@ -60,6 +74,11 @@ def crawl_with_wget_sync(url):
             text=True,
             check=False  # Don't raise exception on non-zero exit
         )
+        
+        # Log the full output for debugging
+        logger.info(f"wget stdout: {process.stdout}")
+        logger.info(f"wget stderr: {process.stderr}")
+        logger.info(f"wget return code: {process.returncode}")
         
         # Check if wget was successful or partially successful
         # Return code 8 means some URLs couldn't be downloaded, but the core site was likely downloaded
