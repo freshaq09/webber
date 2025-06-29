@@ -28,12 +28,39 @@ def crawl_with_wget_sync(url):
     try:
         # First, check if wget is available
         try:
-            wget_check = subprocess.run(['which', 'wget'], capture_output=True, text=True)
-            if wget_check.returncode != 0:
+            # Check multiple possible wget locations
+            wget_locations = ['wget', '/nix/store/*/bin/wget', '/usr/bin/wget', '/bin/wget']
+            wget_found = False
+            wget_path = None
+            
+            for location in wget_locations:
+                try:
+                    if '*' in location:
+                        # Handle wildcard paths
+                        import glob
+                        matches = glob.glob(location)
+                        for match in matches:
+                            if os.path.exists(match) and os.access(match, os.X_OK):
+                                wget_path = match
+                                wget_found = True
+                                break
+                    else:
+                        # Direct path check
+                        result = subprocess.run(['which', location], capture_output=True, text=True)
+                        if result.returncode == 0:
+                            wget_path = result.stdout.strip()
+                            wget_found = True
+                            break
+                except Exception:
+                    continue
+            
+            if not wget_found:
                 logger.error("wget is not available on this system")
-                logger.error(f"wget check output: {wget_check.stdout} {wget_check.stderr}")
+                logger.error(f"Checked locations: {wget_locations}")
+                logger.error(f"PATH: {os.environ.get('PATH', 'Not set')}")
                 return None
-            logger.info(f"wget found at: {wget_check.stdout.strip()}")
+            
+            logger.info(f"wget found at: {wget_path}")
         except Exception as e:
             logger.error(f"Error checking wget availability: {e}")
             return None
@@ -50,8 +77,11 @@ def crawl_with_wget_sync(url):
         logger.info(f"Starting wget crawl for {url} in {temp_dir}")
         
         # Build wget command for fast, complete website downloading
+        # Use full path to wget from Nix store
+        wget_cmd = '/nix/store/lxpqagx4z23qxxchpjz5vq23bhfgxgph-wget-1.24.5/bin/wget'
+        
         cmd = [
-            'wget',
+            wget_cmd,
             '--mirror',               # Mirror the website
             '--convert-links',        # Convert links to work locally
             '--adjust-extension',     # Add extensions to files (.html)
