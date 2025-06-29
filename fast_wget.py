@@ -65,6 +65,26 @@ def crawl_with_wget_sync(url):
         # Return code 8 means some URLs couldn't be downloaded, but the core site was likely downloaded
         if process.returncode != 0 and process.returncode != 8:
             logger.error(f"wget failed with return code {process.returncode}: {process.stderr}")
+            
+            # Provide more specific error messages based on return codes
+            if process.returncode == 1:
+                error_msg = "Generic error occurred during download. The website might be unavailable or blocked."
+            elif process.returncode == 2:
+                error_msg = "Parse error. The URL format might be invalid."
+            elif process.returncode == 3:
+                error_msg = "File I/O error. Check disk space and permissions."
+            elif process.returncode == 4:
+                error_msg = "Network failure. Check your internet connection."
+            elif process.returncode == 5:
+                error_msg = "SSL verification failed. The website might have certificate issues."
+            elif process.returncode == 6:
+                error_msg = "Username/password authentication failed."
+            elif process.returncode == 7:
+                error_msg = "Protocol error. The website might not support the required protocol."
+            else:
+                error_msg = f"wget failed with error code {process.returncode}. Please try a different website."
+            
+            logger.error(f"Specific error: {error_msg}")
             return None
         elif process.returncode == 8:
             # This is a partial success - some URLs were too long or had other issues

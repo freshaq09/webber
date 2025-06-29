@@ -197,23 +197,47 @@
                 downloadStatus.style.opacity = '1';
             }, 10);
             
-            // Create a form for direct download
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = '/fast_wget';
+            // Use fetch to handle both success and error cases
+            const formData = new FormData();
+            formData.append('url', processedUrl);
             
-            // Create the URL input
-            const urlField = document.createElement('input');
-            urlField.type = 'hidden';
-            urlField.name = 'url';
-            urlField.value = processedUrl;
-            
-            // Add to form and submit
-            form.appendChild(urlField);
-            document.body.appendChild(form);
-            
-            // Set a timeout to reset the button state and show fallback message if download didn't start
-            setTimeout(() => {
+            fetch('/fast_wget', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                // Check if the response is a ZIP file (success) or JSON error
+                const contentType = response.headers.get('content-type');
+                
+                if (contentType && contentType.includes('application/zip')) {
+                    // Success - trigger file download
+                    return response.blob().then(blob => {
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.style.display = 'none';
+                        a.href = url;
+                        a.download = response.headers.get('content-disposition')?.split('filename=')[1] || 'website.zip';
+                        document.body.appendChild(a);
+                        a.click();
+                        window.URL.revokeObjectURL(url);
+                        document.body.removeChild(a);
+                        
+                        // Show success message
+                        showSuccess('Website downloaded successfully!');
+                    });
+                } else {
+                    // Error - parse JSON response
+                    return response.json().then(data => {
+                        throw new Error(data.error || 'Download failed');
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Download error:', error);
+                showError(error.message || 'Failed to download website. Please try again.');
+            })
+            .finally(() => {
+                // Reset button state
                 fastWgetButton.disabled = false;
                 fastWgetButton.innerHTML = '<i class="fas fa-bolt me-2"></i>Instant Download';
                 
@@ -223,16 +247,7 @@
                     downloadStatus.classList.add('d-none');
                     downloadStatus.style.opacity = '1';
                 }, 500);
-                
-                // Show a message that combines success with fallback info
-                showAlert('If the download didn\'t start automatically, please check if the URL is valid or try a different website.', 'info');
-            }, 8000);
-            
-            // Submit the form to trigger download
-            form.submit();
-            
-            // Clean up
-            document.body.removeChild(form);
+            });
         }
         
         // Show error message

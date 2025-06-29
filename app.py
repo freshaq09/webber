@@ -139,7 +139,7 @@ def fast_wget():
         
         if not zip_path:
             logger.error("crawl_with_wget_sync returned None")
-            return jsonify({"error": "Failed to download website with wget. The crawling process failed."}), 500
+            return jsonify({"error": "Failed to download website with wget. The website might be unavailable, blocked, or have certificate issues. Please try a different website."}), 500
             
         if not os.path.exists(zip_path):
             logger.error(f"Generated ZIP file does not exist at path: {zip_path}")
@@ -688,7 +688,7 @@ def api_fast_wget():
         
         if not zip_path:
             logger.error("API: crawl_with_wget_sync returned None")
-            return jsonify({"error": "Failed to download website with wget. The crawling process failed."}), 500
+            return jsonify({"error": "Failed to download website with wget. The website might be unavailable, blocked, or have certificate issues. Please try a different website."}), 500
             
         if not os.path.exists(zip_path):
             logger.error(f"API: Generated ZIP file does not exist at path: {zip_path}")
