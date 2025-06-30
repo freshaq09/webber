@@ -44,8 +44,12 @@ login_manager.login_view = 'login'
 login_manager.login_message = 'Please log in to access this page.'
 
 # Create database tables
-with app.app_context():
-    db.create_all()
+def create_tables():
+    with app.app_context():
+        db.create_all()
+
+# Create tables on startup
+create_tables()
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -708,5 +712,11 @@ def api_fast_wget():
         return jsonify({"error": f"Error downloading with wget: {str(e)}"}), 500
 
 if __name__ == '__main__':
-    port = int(os.environ.get("PORT", 5050))
-    socketio.run(app, debug=True, host='0.0.0.0', port=port)
+    try:
+        port = int(os.environ.get("PORT", 5050))
+        print(f"Starting app on port {port}")
+        socketio.run(app, debug=False, host='0.0.0.0', port=port)
+    except Exception as e:
+        print(f"Error starting app: {e}")
+        import traceback
+        traceback.print_exc()
