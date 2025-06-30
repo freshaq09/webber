@@ -713,9 +713,14 @@ def api_fast_wget():
 
 if __name__ == '__main__':
     try:
-        port = int(os.environ.get("PORT", 5050))
+        port = int(os.environ.get("PORT", 8080))
         print(f"Starting app on port {port}")
-        socketio.run(app, debug=False, host='0.0.0.0', port=port)
+        print(f"Environment: PORT={os.environ.get('PORT')}")
+        print(f"Current directory: {os.getcwd()}")
+        print(f"Files in directory: {os.listdir('.')}")
+        
+        # Use a simpler startup for Railway
+        app.run(host='0.0.0.0', port=port, debug=False)
     except Exception as e:
         print(f"Error starting app: {e}")
         import traceback
