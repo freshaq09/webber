@@ -24,5 +24,5 @@ COPY . .
 # Expose port (Railway will set the actual port)
 EXPOSE $PORT
 
-# Run the application with proper port binding
-CMD gunicorn app:app --bind 0.0.0.0:$PORT 
+# Run the application with python directly (not gunicorn)
+CMD python app.py 
