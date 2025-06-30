@@ -21,11 +21,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY . .
 
-# Expose port
-EXPOSE 8080
+# Expose port (Railway will set the actual port)
+EXPOSE $PORT
 
-# Set environment variable
-ENV PORT=8080
-
-# Run the application
-CMD ["gunicorn", "app:app", "--bind", "0.0.0.0:8080"] 
+# Run the application with proper port binding
+CMD gunicorn app:app --bind 0.0.0.0:$PORT 
